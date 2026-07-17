@@ -426,32 +426,74 @@ function draw() {
   }
 }
 
+// Robot-frame metres -> local canvas px, matching PathPlanner's feature painters:
+//   Offset(p.x * pixelsPerMeter, -p.y * pixelsPerMeter)
+const M_PX = PPM * S;
+const rx = x => x * M_PX;
+const ry = y => -y * M_PX;
+// Features are authored in real dimensions (frame lines are 5mm), which vanish once
+// the canvas is scaled down, so keep strokes legible.
+const stroke = w => Math.max(1.5, w * M_PX);
+
 function drawRobot(s) {
   if (!s) return;
-  const w = data.robot.widthM * PPM * S, l = data.robot.lengthM * PPM * S;
+  const w = data.robot.widthM * M_PX, l = data.robot.lengthM * M_PX;
   ctx.save();
   ctx.translate(fx(s.x), fy(s.y));
   ctx.rotate(-s.deg * Math.PI / 180);      // canvas y is inverted vs field
 
-  // The field image is busy, so the robot needs a dark halo to stay readable
+  // The field image is busy, so the robot needs a dark backing to stay readable
   // wherever it happens to be.
   ctx.shadowColor = 'rgba(0,0,0,.9)';
   ctx.shadowBlur = 12;
-  ctx.fillStyle = 'rgba(28,27,31,.72)';
+  ctx.fillStyle = 'rgba(28,27,31,.78)';
   ctx.fillRect(-l/2, -w/2, l, w);
   ctx.shadowBlur = 0;
 
-  ctx.fillStyle = 'rgba(208,188,255,.30)';
+  // Bumper perimeter (robotWidth/Length). The features describe the chassis and
+  // mechanisms inside/outside it, not the bumpers.
+  ctx.fillStyle = 'rgba(208,188,255,.18)';
   ctx.fillRect(-l/2, -w/2, l, w);
-  ctx.strokeStyle = '#d0bcff';
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = 'rgba(208,188,255,.55)';
+  ctx.lineWidth = 2;
   ctx.strokeRect(-l/2, -w/2, l, w);
 
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;   // robot +x is forward
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(l/2, 0); ctx.stroke();
-  ctx.fillStyle = '#fff';                        // nose dot = heading
-  ctx.beginPath(); ctx.arc(l/2, 0, 4, 0, Math.PI*2); ctx.fill();
+  for (const f of (data.robot.features || [])) drawFeature(f);
   ctx.restore();
+}
+
+/** Draws one robotFeature from settings.json in the robot frame. */
+function drawFeature(f) {
+  const d = f.data || {};
+  ctx.strokeStyle = '#d0bcff';
+  ctx.fillStyle = 'rgba(208,188,255,.45)';
+  ctx.lineCap = 'butt';
+
+  if (f.type === 'line' && d.start && d.end) {
+    ctx.lineWidth = stroke(d.strokeWidth);
+    ctx.beginPath();
+    ctx.moveTo(rx(d.start.x), ry(d.start.y));
+    ctx.lineTo(rx(d.end.x), ry(d.end.y));
+    ctx.stroke();
+
+  } else if (f.type === 'circle' && d.center) {
+    ctx.lineWidth = stroke(d.strokeWidth);
+    ctx.beginPath();
+    ctx.arc(rx(d.center.x), ry(d.center.y), d.radius * M_PX, 0, Math.PI * 2);
+    d.filled ? ctx.fill() : ctx.stroke();
+
+  } else if (f.type === 'rounded_rect' && d.center && d.size) {
+    // PathPlanner maps size.length -> x extent and size.width -> y extent
+    // (RoundedRectFeature passes sizePixels.height as the rect's width).
+    const ex = d.size.length * M_PX, ey = d.size.width * M_PX;
+    const cx = rx(d.center.x), cy = ry(d.center.y);
+    const r = (d.borderRadius || 0) * M_PX;
+    ctx.lineWidth = stroke(d.strokeWidth);
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(cx - ex/2, cy - ey/2, ex, ey, r);
+    else ctx.rect(cx - ex/2, cy - ey/2, ex, ey);
+    d.filled ? ctx.fill() : ctx.stroke();
+  }
 }
 
 function frame(ts) {

@@ -78,6 +78,7 @@ public class AutoDumper {
         .append(", \"moi\": ").append(config.MOI)
         .append(", \"widthM\": ").append(settingsNum("robotWidth"))
         .append(", \"lengthM\": ").append(settingsNum("robotLength"))
+        .append(", \"features\": ").append(robotFeatures())
         .append("},\n");
     // Field size straight from PathPlannerLib rather than a hardcoded guess.
     out.append("  \"field\": {\"sizeX\": ").append(FlippingUtil.fieldSizeX)
@@ -198,6 +199,27 @@ public class AutoDumper {
   private static double settingsNum(String key) throws Exception {
     JSONObject root = readJson(Paths.get(PP_DIR, "settings.json"));
     return ((Number) root.get(key)).doubleValue();
+  }
+
+  /**
+   * settings.json stores robotFeatures as an array of JSON-encoded *strings*, so each
+   * entry has to be parsed before it can be re-emitted as a real object.
+   */
+  private static String robotFeatures() throws Exception {
+    JSONObject root = readJson(Paths.get(PP_DIR, "settings.json"));
+    Object rf = root.get("robotFeatures");
+    List<String> out = new ArrayList<>();
+    if (rf instanceof JSONArray) {
+      for (Object entry : (JSONArray) rf) {
+        try {
+          JSONObject f = (JSONObject) new JSONParser().parse(String.valueOf(entry));
+          out.add(f.toJSONString());
+        } catch (Exception e) {
+          System.out.println("  skipping unparseable robotFeature: " + entry);
+        }
+      }
+    }
+    return "[" + String.join(", ", out) + "]";
   }
 
   private static String q(String s) {

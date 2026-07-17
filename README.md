@@ -75,10 +75,13 @@ Works on a phone. The auto list is behind the ☰ menu, controls are touch-sized
 **rotates 90° in portrait** — a 2:1 landscape field would otherwise use about a fifth of the
 screen height. Verified at a 390 px viewport with no horizontal overflow.
 
+The robot is drawn from the real `robotFeatures` in `settings.json` — frame outline, intake,
+turret — inside the bumper perimeter, so heading and intake orientation are readable directly
+rather than inferred from an arrow. Features follow PathPlanner's own painters, including the
+quirk that `size.length` maps to the **x** extent and `size.width` to the **y** extent.
+
 ## Known gaps (MVP)
 
-- Robot renders as a square with a heading line. `settings.json` defines real `robotFeatures`
-  (intake, turret, frame outlines) that could be drawn instead.
 - No CI. `regen.sh` is manual, so `autos.json` goes stale until someone runs it. The source SHA
   is stamped and shown in the UI so staleness is at least visible.
 - Event labels show only within 1.2 s of the playhead; markers that fire close together can
