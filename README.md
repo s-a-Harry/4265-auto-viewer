@@ -59,14 +59,30 @@ wrong, these times are all pessimistic.
 total against the number PathPlanner reports for the same auto. Until that golden check is done,
 treat these as indicative, not authoritative.
 
+## Looks like PathPlanner, on purpose
+
+The field is PathPlanner's own `field26.png`, drawn with its exact calibration (3508×1814 at
+200 px/m, 0.5 m margin — which works out to 16.54 × 8.07 m, matching PathPlannerLib's
+`FlippingUtil.fieldSizeX/Y`). The palette, the red→orange→yellow→green **velocity ramp**, and
+the green-start/red-end waypoints all follow the editor, so anyone who uses PathPlanner already
+knows how to read this. PathPlanner is MIT licensed; see [THIRD-PARTY.md](THIRD-PARTY.md).
+
+The velocity ramp is the useful part: it shows at a glance where a robot is crawling.
+
+## Phones
+
+Works on a phone. The auto list is behind the ☰ menu, controls are touch-sized, and the field
+**rotates 90° in portrait** — a 2:1 landscape field would otherwise use about a fifth of the
+screen height. Verified at a 390 px viewport with no horizontal overflow.
+
 ## Known gaps (MVP)
 
-- Field is a boundary, centre line, and 1 m grid — no REBUILT elements (Trench, Outpost, Depot,
-  Bumps). Geometry exists in the official field drawings; not yet drawn.
 - Robot renders as a square with a heading line. `settings.json` defines real `robotFeatures`
   (intake, turret, frame outlines) that could be drawn instead.
 - No CI. `regen.sh` is manual, so `autos.json` goes stale until someone runs it. The source SHA
   is stamped and shown in the UI so staleness is at least visible.
+- Event labels show only within 1.2 s of the playhead; markers that fire close together can
+  still overlap.
 
 ## Two things worth the team's attention
 

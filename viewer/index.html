@@ -2,87 +2,205 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c1b1f">
 <title>4265 Auto Replay</title>
 <style>
+  /* Palette follows PathPlanner's Material 3 dark surfaces so the tool reads as
+     familiar to anyone who uses the editor. */
   :root {
-    --bg: #14161a;
-    --panel: #1c1f26;
-    --line: #2c313b;
-    --text: #e6e9ef;
-    --dim: #8b93a3;
-    --accent: #ffb114;
-    --trail: #4da3ff;
-    --warn: #ff6b5e;
+    --surface: #1c1b1f;
+    --surface-1: #232227;
+    --surface-2: #2b2930;
+    --outline: #49454f;
+    --on-surface: #e6e1e5;
+    --on-surface-dim: #cac4d0;
+    --primary: #d0bcff;
+    --secondary: #ccc2dc;
+    --warn-bg: #2b2416;
+    --warn-fg: #e3c08a;
+    --err: #f2b8b5;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    display: grid; grid-template-columns: 290px 1fr; height: 100vh; overflow: hidden;
+    margin: 0; background: var(--surface); color: var(--on-surface);
+    font: 14px/1.5 ui-sans-serif, system-ui, Roboto, "Segoe UI", sans-serif;
+    /* minmax(0,1fr), not 1fr: 1fr floors at min-content, and the canvas's
+       intrinsic 1754px would blow the column out past the viewport. */
+    display: grid; grid-template-columns: 300px minmax(0, 1fr);
+    height: 100dvh; overflow: hidden;
   }
-  #sidebar { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; }
-  #sidebar h1 { font-size: 15px; margin: 0; padding: 14px 16px 4px; letter-spacing: .02em; }
-  #src { padding: 0 16px 12px; color: var(--dim); font-size: 11px; border-bottom: 1px solid var(--line); }
-  #src code { color: var(--accent); }
-  .folder { border-bottom: 1px solid var(--line); }
+
+  /* ---- sidebar ---- */
+  #sidebar {
+    background: var(--surface-1); border-right: 1px solid var(--outline);
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  #brand { padding: 14px 16px 6px; }
+  #brand h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  #src { padding: 0 16px 12px; color: var(--on-surface-dim); font-size: 11px; opacity: .75; }
+  #src code { color: var(--primary); }
+  #filter {
+    width: calc(100% - 32px); margin: 0 16px 12px; padding: 9px 11px;
+    background: var(--surface-2); border: 1px solid var(--outline); border-radius: 8px;
+    color: var(--on-surface); font-size: 14px;
+  }
+  #filter:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+  .folder { border-top: 1px solid var(--outline); }
   .folder > summary {
-    padding: 9px 16px; cursor: pointer; font-weight: 600; font-size: 12px;
-    text-transform: uppercase; letter-spacing: .06em; color: var(--dim); user-select: none;
+    padding: 10px 16px; cursor: pointer; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: var(--on-surface-dim);
+    user-select: none; opacity: .8;
   }
-  .folder > summary:hover { color: var(--text); }
-  .folder > summary::marker { color: var(--line); }
+  .folder > summary:hover { opacity: 1; }
   .auto {
-    padding: 7px 16px 7px 22px; cursor: pointer; display: flex;
-    justify-content: space-between; gap: 8px; border-left: 2px solid transparent;
+    padding: 10px 16px 10px 22px; cursor: pointer; display: flex;
+    justify-content: space-between; gap: 10px; align-items: baseline;
+    border-left: 3px solid transparent; min-height: 44px;
   }
-  .auto:hover { background: #232733; }
-  .auto.sel { background: #2a3040; border-left-color: var(--accent); }
-  .auto .t { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 12px; }
-  .auto.err .n { color: var(--warn); }
-  #main { display: flex; flex-direction: column; min-width: 0; }
-  #head { padding: 12px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 14px; }
-  #title { font-size: 17px; font-weight: 600; }
-  #meta { color: var(--dim); font-size: 12px; }
-  #stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px; min-height: 0; }
-  canvas { max-width: 100%; max-height: 100%; border-radius: 6px; }
-  #controls { padding: 10px 18px 14px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  .auto:hover { background: var(--surface-2); }
+  .auto.sel { background: #332d41; border-left-color: var(--primary); }
+  .auto .t { color: var(--on-surface-dim); font-variant-numeric: tabular-nums; font-size: 12px; opacity: .8; }
+  #credit {
+    padding: 14px 16px 20px; font-size: 10px; color: var(--on-surface-dim);
+    opacity: .55; border-top: 1px solid var(--outline);
+  }
+  #credit a { color: inherit; }
+  .auto.over .t { color: var(--warn-fg); font-weight: 700; }
+  .auto.err .n { color: var(--err); }
+
+  /* ---- main ---- */
+  #main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  #head {
+    padding: 12px 18px; border-bottom: 1px solid var(--outline);
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  }
+  #title { font-size: 17px; font-weight: 600; min-width: 0; }
+  /* min-width:0 + wrapping, or long path lists force the flex row wider than the
+     viewport and everything downstream gets clipped. */
+  #meta {
+    color: var(--on-surface-dim); font-size: 12px; opacity: .85;
+    min-width: 0; overflow-wrap: anywhere;
+  }
+  #stage {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 12px; min-height: 0; min-width: 0; overflow: hidden;
+    background: var(--surface);
+  }
+  /* Size is set by layout(); the field is rotated on portrait phones, where a 2:1
+     landscape field would otherwise use a fifth of the screen. */
+  canvas { border-radius: 8px; display: block; transform-origin: center; }
+
+  #note { padding: 8px 18px; background: var(--warn-bg); color: var(--warn-fg); font-size: 12px; }
+  #legend {
+    display: flex; align-items: center; gap: 8px; font-size: 11px;
+    color: var(--on-surface-dim); padding: 8px 18px 0;
+  }
+  #ramp {
+    height: 8px; width: 130px; border-radius: 4px;
+    background: linear-gradient(90deg, #f44336, #ff9800, #ffeb3b, #4caf50);
+  }
+  #controls {
+    padding: 10px 18px calc(14px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--outline); display: flex; align-items: center; gap: 12px;
+  }
   button {
-    background: var(--accent); color: #14161a; border: 0; border-radius: 5px;
-    padding: 7px 15px; font-weight: 700; cursor: pointer; font-size: 13px; min-width: 74px;
+    background: var(--primary); color: #381e72; border: 0; border-radius: 20px;
+    padding: 10px 18px; font-weight: 700; cursor: pointer; font-size: 14px;
+    min-width: 84px; min-height: 44px;
   }
-  button:hover { filter: brightness(1.1); }
-  #scrub { flex: 1; accent-color: var(--accent); }
-  #clock { font-variant-numeric: tabular-nums; color: var(--dim); min-width: 130px; font-size: 13px; }
-  select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px; }
-  #note {
-    padding: 7px 18px; background: #241f14; color: #d3b475;
-    font-size: 12px; border-top: 1px solid var(--line);
+  button:active { filter: brightness(.9); }
+  #track { flex: 1; min-width: 60px; position: relative; display: flex; align-items: center; }
+  #scrub { width: 100%; accent-color: var(--primary); height: 30px; margin: 0; }
+  /* Event ticks sit under the scrubber so you can see when things fire. */
+  #ticks { position: absolute; left: 8px; right: 8px; bottom: 2px; height: 5px; pointer-events: none; }
+  #ticks i { position: absolute; width: 2px; height: 5px; background: var(--primary); opacity: .85; border-radius: 1px; }
+  #clock {
+    font-variant-numeric: tabular-nums; color: var(--on-surface-dim);
+    min-width: 150px; font-size: 13px; text-align: right;
+  }
+  select {
+    background: var(--surface-2); color: var(--on-surface); border: 1px solid var(--outline);
+    border-radius: 8px; padding: 9px; min-height: 44px; font-size: 14px;
+  }
+
+  /* ---- phone ---- */
+  #menu { display: none; }
+  @media (max-width: 820px) {
+    /* Sidebar is position:fixed (out of flow), so #main is the only grid item —
+       a single 1fr row, or #stage never gets height to expand into. */
+    body { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr; }
+    #sidebar {
+      position: fixed; inset: 0 auto 0 0; width: min(84vw, 320px); z-index: 20;
+      transform: translateX(-100%); transition: transform .22s ease;
+      border-right: 1px solid var(--outline); padding-top: env(safe-area-inset-top);
+    }
+    body.nav #sidebar { transform: none; box-shadow: 0 0 0 100vmax rgba(0,0,0,.5); }
+    #head {
+      padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
+      gap: 10px; align-items: center;
+    }
+    #menu {
+      display: inline-flex; align-items: center; justify-content: center; flex: none;
+      background: var(--surface-2); color: var(--on-surface); border: 1px solid var(--outline);
+      border-radius: 8px; min-width: 44px; min-height: 40px; padding: 0 12px; font-size: 18px;
+    }
+    #title { font-size: 15px; flex: 1; }
+    #meta { font-size: 11px; flex-basis: 100%; }
+    #stage { padding: 6px; }
+    #clock { min-width: 0; font-size: 11px; flex: none; }
+    #controls { gap: 8px; padding-left: 12px; padding-right: 12px; }
+    button { min-width: 0; padding: 10px 16px; flex: none; }
+    #scrub { min-width: 40px; }
+    select { padding: 8px 4px; flex: none; }
+    #legend { padding: 6px 12px 0; flex-wrap: wrap; }
+    #ramp { width: 90px; }
+    #note { padding: 7px 12px; font-size: 11px; }
+  }
+  /* Very narrow: drop the speed picker rather than let it squeeze the scrubber. */
+  @media (max-width: 400px) {
+    select { display: none; }
   }
 </style>
 </head>
 <body>
 <div id="sidebar">
-  <h1>4265 Auto Replay</h1>
+  <div id="brand"><h1>4265 Auto Replay</h1></div>
   <div id="src">loading…</div>
+  <input id="filter" type="search" placeholder="Filter autos…" autocomplete="off">
   <div id="list"></div>
+  <div id="credit">
+    Field image &amp; colours from
+    <a href="https://github.com/mjansen4857/pathplanner">PathPlanner</a> (MIT).
+  </div>
 </div>
 
 <div id="main">
   <div id="head">
+    <button id="menu" aria-label="Toggle auto list">☰</button>
     <div id="title">Select an auto</div>
     <div id="meta"></div>
   </div>
+
   <div id="stage"><canvas id="c"></canvas></div>
+
+  <div id="legend">
+    <span>slow</span><div id="ramp"></div><span>fast</span>
+    <span id="ramptxt"></span>
+  </div>
   <div id="note">
-    Times are <strong>driving time only</strong> — they exclude however long named commands
-    (Shoot, Intake…) take to run. Treat every number here as a floor, not a total.
+    <strong>Driving time only</strong> — excludes named commands (Shoot, Intake…).
+    A floor, not a total. Auto period is 20s.
   </div>
   <div id="controls">
     <button id="play">Play</button>
-    <input id="scrub" type="range" min="0" max="1000" value="0" step="1">
+    <div id="track">
+      <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Scrub">
+      <div id="ticks"></div>
+    </div>
     <span id="clock">0.00s / 0.00s</span>
-    <select id="speed">
+    <select id="speed" aria-label="Playback speed">
       <option value="0.25">0.25×</option>
       <option value="0.5">0.5×</option>
       <option value="1" selected>1×</option>
@@ -92,25 +210,63 @@
 </div>
 
 <script>
-const PX_PER_M = 62;
+// PathPlanner's field26.png calibration (lib/widgets/field_image.dart):
+//   defaultSize 3508x1814, pixelsPerMeter 200, marginMeters 0.5
+// -> field 16.54 x 8.07m, matching PathPlannerLib's FlippingUtil.fieldSizeX/Y.
+const IMG_W = 3508, IMG_H = 1814, PPM = 200, MARGIN = 0.5;
+const RENDER_W = 1754;                 // half-res: crisp enough, easy on phones
+const S = RENDER_W / IMG_W;
+const AUTO_PERIOD = 20;                // 2026 REBUILT
+
 let data = null, cur = null, t = 0, playing = false, last = 0, speed = 1;
+const field = new Image();
+let fieldReady = false;
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
+canvas.width = RENDER_W;
+canvas.height = Math.round(IMG_H * S);
+
+const fx = x => (x + MARGIN) * PPM * S;
+const fy = y => canvas.height - (y + MARGIN) * PPM * S;
+
+/**
+ * Fit the field to the stage, rotating it 90° when the stage is taller than it is
+ * wide (portrait phones). Without this the field renders about a fifth of screen
+ * height and the rest is dead space.
+ */
+function layout() {
+  const stage = document.getElementById('stage');
+  const cs = getComputedStyle(stage);
+  const availW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const availH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  if (availW <= 0 || availH <= 0) return;
+
+  const rotate = availH > availW;
+  // When rotated, the canvas's width spans the stage's height and vice versa.
+  const scale = rotate
+    ? Math.min(availH / canvas.width, availW / canvas.height)
+    : Math.min(availW / canvas.width, availH / canvas.height);
+
+  canvas.style.width = (canvas.width * scale) + 'px';
+  canvas.style.height = (canvas.height * scale) + 'px';
+  canvas.style.transform = rotate ? 'rotate(90deg)' : '';
+}
+window.addEventListener('resize', layout);
+window.addEventListener('orientationchange', layout);
 
 Promise.all([
   fetch('autos.json').then(r => r.json()),
-  fetch('source.json').then(r => r.json()).catch(() => null)
+  fetch('source.json').then(r => r.json()).catch(() => null),
+  new Promise(res => { field.onload = () => { fieldReady = true; res(); };
+                       field.onerror = res; field.src = 'field26.png'; })
 ]).then(([autos, src]) => {
   data = autos;
-  canvas.width = data.field.sizeX * PX_PER_M;
-  canvas.height = data.field.sizeY * PX_PER_M;
-
   document.getElementById('src').innerHTML = src
-    ? `paths from <code>${src.repo}</code> @ <code>${src.sha}</code> (${src.branch}, ${src.commitDate})`
+    ? `<code>${src.repo}</code> @ <code>${src.sha}</code> · ${src.branch} · ${src.commitDate}`
     : 'source unknown';
-
   buildList();
+  layout();
   if (!applyHash()) {
     const first = data.autos.find(a => !a.error);
     if (first) select(first);
@@ -124,11 +280,11 @@ function buildList() {
     if (!byFolder.has(a.folder)) byFolder.set(a.folder, []);
     byFolder.get(a.folder).push(a);
   }
-  // Testing last and collapsed; it's scratch work, not real autos.
   const folders = [...byFolder.keys()].sort((x, y) =>
     (x === 'Testing') - (y === 'Testing') || x.localeCompare(y));
 
   const list = document.getElementById('list');
+  list.innerHTML = '';
   for (const f of folders) {
     const items = byFolder.get(f).sort((a, b) => a.name.localeCompare(b.name));
     const d = document.createElement('details');
@@ -137,10 +293,13 @@ function buildList() {
     d.innerHTML = `<summary>${f} (${items.length})</summary>`;
     for (const a of items) {
       const el = document.createElement('div');
-      el.className = 'auto' + (a.error ? ' err' : '');
+      const over = !a.error && a.drivingTimeSec > AUTO_PERIOD;
+      el.className = 'auto' + (a.error ? ' err' : '') + (over ? ' over' : '');
+      el.dataset.name = a.name;
+      if (over) el.title = `Driving alone exceeds the ${AUTO_PERIOD}s auto period`;
       el.innerHTML = `<span class="n">${a.name}</span><span class="t">${
         a.error ? 'error' : a.drivingTimeSec.toFixed(1) + 's'}</span>`;
-      el.onclick = () => select(a, el);
+      el.onclick = () => { select(a, el); document.body.classList.remove('nav'); };
       d.appendChild(el);
     }
     list.appendChild(d);
@@ -151,40 +310,51 @@ function select(a, el) {
   cur = a; t = 0; playing = false;
   document.getElementById('play').textContent = 'Play';
   document.querySelectorAll('.auto.sel').forEach(e => e.classList.remove('sel'));
-  if (el) el.classList.add('sel');
-  else {
-    const idx = [...document.querySelectorAll('.auto .n')].find(n => n.textContent === a.name);
-    if (idx) idx.parentElement.classList.add('sel');
-  }
+  (el || document.querySelector(`.auto[data-name="${CSS.escape(a.name)}"]`))
+    ?.classList.add('sel');
+
   document.getElementById('title').textContent = a.name;
+  const over = !a.error && a.drivingTimeSec > AUTO_PERIOD;
   document.getElementById('meta').textContent = a.error
     ? a.error
-    : `${a.folder} · ${a.drivingTimeSec.toFixed(2)}s driving · ${a.paths.length} path${
-        a.paths.length === 1 ? '' : 's'}: ${a.paths.join(' → ')}`;
+    : `${a.folder} · ${a.drivingTimeSec.toFixed(2)}s driving${
+        over ? ` — over the ${AUTO_PERIOD}s auto period` : ''} · ${a.paths.join(' → ')}`;
+  document.getElementById('meta').style.color = over ? 'var(--warn-fg)' : '';
+
+  const vmax = maxV();
+  document.getElementById('ramptxt').textContent = vmax ? `0 – ${vmax.toFixed(1)} m/s` : '';
   document.getElementById('scrub').value = 0;
-  draw();
-  updateClock();
-}
 
-/** Deep link: #auto=<name>[&t=<seconds>] so a specific moment can be shared. */
-function applyHash() {
-  const h = new URLSearchParams(location.hash.slice(1));
-  const name = h.get('auto');
-  if (!name) return false;
-  const a = data.autos.find(x => x.name === name);
-  if (!a) return false;
-  select(a);
-  const ts = parseFloat(h.get('t'));
-  if (!isNaN(ts)) {
-    t = Math.max(0, Math.min(ts, totalT()));
-    document.getElementById('scrub').value = totalT() ? (t / totalT()) * 1000 : 0;
-    draw();
-    updateClock();
+  const ticks = document.getElementById('ticks');
+  ticks.innerHTML = '';
+  const tot = totalT();
+  if (tot > 0) {
+    for (const m of a.eventMarkers) {
+      const i = document.createElement('i');
+      i.style.left = (m.t / tot) * 100 + '%';
+      i.title = `${m.name} @ ${m.t.toFixed(2)}s`;
+      ticks.appendChild(i);
+    }
   }
-  return true;
+  location.replace('#auto=' + encodeURIComponent(a.name));
+  draw(); updateClock();
 }
 
+function maxV() {
+  return cur && cur.samples.length ? Math.max(...cur.samples.map(s => s.v)) : 0;
+}
 function totalT() { return cur && cur.samples.length ? cur.drivingTimeSec : 0; }
+
+/** PathPlanner's velocity ramp: red -> orange -> yellow -> green over 0..max. */
+function velColor(v, vmax) {
+  const p = vmax <= 1e-9 ? 0 : Math.max(0, Math.min(1, v / vmax));
+  const stops = [[244,67,54], [255,152,0], [255,235,59], [76,175,80]];
+  const seg = Math.min(2, Math.floor(p * 3));
+  const f = p * 3 - seg;
+  const a = stops[seg], b = stops[seg + 1];
+  return `rgb(${Math.round(a[0] + (b[0]-a[0])*f)},${Math.round(a[1] + (b[1]-a[1])*f)},${
+    Math.round(a[2] + (b[2]-a[2])*f)})`;
+}
 
 function sampleAt(time) {
   const s = cur.samples;
@@ -192,127 +362,138 @@ function sampleAt(time) {
   if (time <= s[0].t) return s[0];
   for (let i = 1; i < s.length; i++) {
     if (s[i].t >= time) {
-      const a = s[i - 1], b = s[i], span = b.t - a.t;
+      const a = s[i-1], b = s[i], span = b.t - a.t;
       const f = span <= 1e-9 ? 0 : (time - a.t) / span;
       let dd = b.deg - a.deg;
       while (dd > 180) dd -= 360;
       while (dd < -180) dd += 360;
-      return { t: time, x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f,
-               deg: a.deg + dd * f, v: a.v + (b.v - a.v) * f };
+      return { t: time, x: a.x + (b.x-a.x)*f, y: a.y + (b.y-a.y)*f,
+               deg: a.deg + dd*f, v: a.v + (b.v-a.v)*f };
     }
   }
   return s[s.length - 1];
 }
 
-// field metres -> canvas px (FRC +y is up; canvas +y is down)
-const fx = x => x * PX_PER_M;
-const fy = y => canvas.height - y * PX_PER_M;
-
 function draw() {
-  const W = canvas.width, H = canvas.height;
-  ctx.fillStyle = '#232830';
-  ctx.fillRect(0, 0, W, H);
-
-  // 1m grid
-  ctx.strokeStyle = '#2b313b';
-  ctx.lineWidth = 1;
-  for (let x = 1; x < data.field.sizeX; x++) {
-    ctx.beginPath(); ctx.moveTo(fx(x), 0); ctx.lineTo(fx(x), H); ctx.stroke();
-  }
-  for (let y = 1; y < data.field.sizeY; y++) {
-    ctx.beginPath(); ctx.moveTo(0, fy(y)); ctx.lineTo(W, fy(y)); ctx.stroke();
-  }
-
-  // centre line + border
-  ctx.strokeStyle = '#3d444f';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(fx(data.field.sizeX / 2), 0);
-  ctx.lineTo(fx(data.field.sizeX / 2), H); ctx.stroke();
-  ctx.strokeRect(0, 0, W, H);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (fieldReady) ctx.drawImage(field, 0, 0, canvas.width, canvas.height);
+  else { ctx.fillStyle = '#2b2930'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
 
   if (!cur || !cur.samples.length) return;
+  const vmax = maxV();
 
-  // full trail
-  ctx.strokeStyle = 'rgba(77,163,255,.35)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  cur.samples.forEach((s, i) => i ? ctx.lineTo(fx(s.x), fy(s.y)) : ctx.moveTo(fx(s.x), fy(s.y)));
-  ctx.stroke();
-
-  // travelled trail
-  ctx.strokeStyle = '#4da3ff';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  let started = false;
-  for (const s of cur.samples) {
-    if (s.t > t) break;
-    started ? ctx.lineTo(fx(s.x), fy(s.y)) : (ctx.moveTo(fx(s.x), fy(s.y)), started = true);
+  // Trajectory, coloured by velocity (PathPlanner's ramp). Upcoming portion is
+  // dimmed so the travelled part reads clearly.
+  ctx.lineWidth = 5; ctx.lineCap = 'round';
+  for (let i = 1; i < cur.samples.length; i++) {
+    const a = cur.samples[i-1], b = cur.samples[i];
+    ctx.globalAlpha = b.t <= t ? 1 : 0.32;
+    ctx.strokeStyle = velColor((a.v + b.v) / 2, vmax);
+    ctx.beginPath(); ctx.moveTo(fx(a.x), fy(a.y)); ctx.lineTo(fx(b.x), fy(b.y)); ctx.stroke();
   }
-  ctx.stroke();
+  ctx.globalAlpha = 1;
 
-  // event markers
+  // Event marker dots. Labels are drawn after the robot so it can't cover them.
   for (const m of cur.eventMarkers) {
     const s = sampleAt(m.t);
     if (!s) continue;
-    ctx.fillStyle = m.t <= t ? '#ffb114' : '#6b7280';
-    ctx.beginPath(); ctx.arc(fx(s.x), fy(s.y), 4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#c3cad6';
-    ctx.font = '10px ui-sans-serif, system-ui, sans-serif';
-    ctx.fillText(m.name, fx(s.x) + 7, fy(s.y) - 6);
+    ctx.fillStyle = m.t <= t ? '#d0bcff' : '#7a7289';
+    ctx.beginPath(); ctx.arc(fx(s.x), fy(s.y), 5, 0, Math.PI*2); ctx.fill();
   }
 
-  // start marker
-  const s0 = cur.samples[0];
-  ctx.strokeStyle = '#4ade80';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(fx(s0.x), fy(s0.y), 6, 0, Math.PI * 2); ctx.stroke();
+  // Start (green) / end (red), as PathPlanner marks waypoints
+  const s0 = cur.samples[0], sN = cur.samples[cur.samples.length-1];
+  for (const [s, col] of [[s0, '#4caf50'], [sN, '#f44336']]) {
+    ctx.fillStyle = col; ctx.strokeStyle = '#1c1b1f'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(fx(s.x), fy(s.y), 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  }
 
   drawRobot(sampleAt(t));
+
+  // Labels only near the playhead — an auto revisits the same spots, so labelling
+  // every marker collides them into mush.
+  ctx.font = '600 13px ui-sans-serif, system-ui, sans-serif';
+  for (const m of cur.eventMarkers) {
+    if (Math.abs(m.t - t) > 1.2) continue;
+    const s = sampleAt(m.t);
+    if (!s) continue;
+    const tx = fx(s.x) + 9, ty = fy(s.y) - 8;
+    const w = ctx.measureText(m.name).width;
+    ctx.fillStyle = 'rgba(28,27,31,.85)';
+    ctx.fillRect(tx - 4, ty - 12, w + 8, 17);
+    ctx.fillStyle = '#e6e1e5';
+    ctx.fillText(m.name, tx, ty);
+  }
 }
 
 function drawRobot(s) {
   if (!s) return;
-  const w = data.robot.widthM * PX_PER_M, l = data.robot.lengthM * PX_PER_M;
+  const w = data.robot.widthM * PPM * S, l = data.robot.lengthM * PPM * S;
   ctx.save();
   ctx.translate(fx(s.x), fy(s.y));
-  ctx.rotate(-s.deg * Math.PI / 180);   // canvas y is inverted
-  ctx.fillStyle = 'rgba(255,177,20,.22)';
-  ctx.strokeStyle = '#ffb114';
-  ctx.lineWidth = 2;
-  ctx.fillRect(-l / 2, -w / 2, l, w);
-  ctx.strokeRect(-l / 2, -w / 2, l, w);
-  // heading / intake direction (robot +x is forward)
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(l / 2, 0); ctx.stroke();
+  ctx.rotate(-s.deg * Math.PI / 180);      // canvas y is inverted vs field
+
+  // The field image is busy, so the robot needs a dark halo to stay readable
+  // wherever it happens to be.
+  ctx.shadowColor = 'rgba(0,0,0,.9)';
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = 'rgba(28,27,31,.72)';
+  ctx.fillRect(-l/2, -w/2, l, w);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = 'rgba(208,188,255,.30)';
+  ctx.fillRect(-l/2, -w/2, l, w);
+  ctx.strokeStyle = '#d0bcff';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(-l/2, -w/2, l, w);
+
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;   // robot +x is forward
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(l/2, 0); ctx.stroke();
+  ctx.fillStyle = '#fff';                        // nose dot = heading
+  ctx.beginPath(); ctx.arc(l/2, 0, 4, 0, Math.PI*2); ctx.fill();
   ctx.restore();
 }
 
 function frame(ts) {
   if (playing && cur) {
-    const dt = (ts - last) / 1000 * speed;
+    t += (ts - last) / 1000 * speed;
     last = ts;
-    t += dt;
-    if (t >= totalT()) { t = totalT(); playing = false; document.getElementById('play').textContent = 'Play'; }
-    document.getElementById('scrub').value = totalT() ? (t / totalT()) * 1000 : 0;
-    draw();
-    updateClock();
-  }
+    if (t >= totalT()) { t = totalT(); playing = false;
+      document.getElementById('play').textContent = 'Play'; }
+    document.getElementById('scrub').value = totalT() ? (t/totalT())*1000 : 0;
+    draw(); updateClock();
+  } else { last = ts; }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(ts => { last = ts; frame(ts); });
 
 function updateClock() {
-  const s = cur ? sampleAt(t) : null;
+  const s = cur && cur.samples.length ? sampleAt(t) : null;
   document.getElementById('clock').textContent =
-    `${t.toFixed(2)}s / ${totalT().toFixed(2)}s` + (s ? ` · ${s.v.toFixed(2)} m/s` : '');
+    `${t.toFixed(2)} / ${totalT().toFixed(2)}s` + (s ? ` · ${s.v.toFixed(2)} m/s` : '');
+}
+
+function applyHash() {
+  if (!data) return false;
+  const h = new URLSearchParams(location.hash.slice(1));
+  const name = h.get('auto');
+  if (!name) return false;
+  const a = data.autos.find(x => x.name === name);
+  if (!a) return false;
+  if (a !== cur) select(a);
+  const ts = parseFloat(h.get('t'));
+  if (!isNaN(ts)) {
+    t = Math.max(0, Math.min(ts, totalT()));
+    document.getElementById('scrub').value = totalT() ? (t/totalT())*1000 : 0;
+    draw(); updateClock();
+  }
+  return true;
 }
 
 document.getElementById('play').onclick = () => {
   if (!cur || !cur.samples.length) return;
   if (t >= totalT()) t = 0;
-  playing = !playing;
-  last = performance.now();
+  playing = !playing; last = performance.now();
   document.getElementById('play').textContent = playing ? 'Pause' : 'Play';
 };
 document.getElementById('scrub').oninput = e => {
@@ -323,6 +504,18 @@ document.getElementById('scrub').oninput = e => {
   draw(); updateClock();
 };
 document.getElementById('speed').onchange = e => speed = parseFloat(e.target.value);
+document.getElementById('menu').onclick = () => document.body.classList.toggle('nav');
+document.getElementById('filter').oninput = e => {
+  const q = e.target.value.toLowerCase();
+  for (const el of document.querySelectorAll('.auto')) {
+    el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+  }
+  for (const d of document.querySelectorAll('.folder')) {
+    const any = [...d.querySelectorAll('.auto')].some(e2 => e2.style.display !== 'none');
+    d.style.display = any ? '' : 'none';
+    if (q) d.open = true;
+  }
+};
 window.addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); document.getElementById('play').click(); }
 });
