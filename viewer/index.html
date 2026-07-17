@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4265 Auto Replay</title>
+<style>
+  :root {
+    --bg: #14161a;
+    --panel: #1c1f26;
+    --line: #2c313b;
+    --text: #e6e9ef;
+    --dim: #8b93a3;
+    --accent: #ffb114;
+    --trail: #4da3ff;
+    --warn: #ff6b5e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: grid; grid-template-columns: 290px 1fr; height: 100vh; overflow: hidden;
+  }
+  #sidebar { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; }
+  #sidebar h1 { font-size: 15px; margin: 0; padding: 14px 16px 4px; letter-spacing: .02em; }
+  #src { padding: 0 16px 12px; color: var(--dim); font-size: 11px; border-bottom: 1px solid var(--line); }
+  #src code { color: var(--accent); }
+  .folder { border-bottom: 1px solid var(--line); }
+  .folder > summary {
+    padding: 9px 16px; cursor: pointer; font-weight: 600; font-size: 12px;
+    text-transform: uppercase; letter-spacing: .06em; color: var(--dim); user-select: none;
+  }
+  .folder > summary:hover { color: var(--text); }
+  .folder > summary::marker { color: var(--line); }
+  .auto {
+    padding: 7px 16px 7px 22px; cursor: pointer; display: flex;
+    justify-content: space-between; gap: 8px; border-left: 2px solid transparent;
+  }
+  .auto:hover { background: #232733; }
+  .auto.sel { background: #2a3040; border-left-color: var(--accent); }
+  .auto .t { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .auto.err .n { color: var(--warn); }
+  #main { display: flex; flex-direction: column; min-width: 0; }
+  #head { padding: 12px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: baseline; gap: 14px; }
+  #title { font-size: 17px; font-weight: 600; }
+  #meta { color: var(--dim); font-size: 12px; }
+  #stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px; min-height: 0; }
+  canvas { max-width: 100%; max-height: 100%; border-radius: 6px; }
+  #controls { padding: 10px 18px 14px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  button {
+    background: var(--accent); color: #14161a; border: 0; border-radius: 5px;
+    padding: 7px 15px; font-weight: 700; cursor: pointer; font-size: 13px; min-width: 74px;
+  }
+  button:hover { filter: brightness(1.1); }
+  #scrub { flex: 1; accent-color: var(--accent); }
+  #clock { font-variant-numeric: tabular-nums; color: var(--dim); min-width: 130px; font-size: 13px; }
+  select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px; }
+  #note {
+    padding: 7px 18px; background: #241f14; color: #d3b475;
+    font-size: 12px; border-top: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <h1>4265 Auto Replay</h1>
+  <div id="src">loading…</div>
+  <div id="list"></div>
+</div>
+
+<div id="main">
+  <div id="head">
+    <div id="title">Select an auto</div>
+    <div id="meta"></div>
+  </div>
+  <div id="stage"><canvas id="c"></canvas></div>
+  <div id="note">
+    Times are <strong>driving time only</strong> — they exclude however long named commands
+    (Shoot, Intake…) take to run. Treat every number here as a floor, not a total.
+  </div>
+  <div id="controls">
+    <button id="play">Play</button>
+    <input id="scrub" type="range" min="0" max="1000" value="0" step="1">
+    <span id="clock">0.00s / 0.00s</span>
+    <select id="speed">
+      <option value="0.25">0.25×</option>
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="2">2×</option>
+    </select>
+  </div>
+</div>
+
+<script>
+const PX_PER_M = 62;
+let data = null, cur = null, t = 0, playing = false, last = 0, speed = 1;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+Promise.all([
+  fetch('autos.json').then(r => r.json()),
+  fetch('source.json').then(r => r.json()).catch(() => null)
+]).then(([autos, src]) => {
+  data = autos;
+  canvas.width = data.field.sizeX * PX_PER_M;
+  canvas.height = data.field.sizeY * PX_PER_M;
+
+  document.getElementById('src').innerHTML = src
+    ? `paths from <code>${src.repo}</code> @ <code>${src.sha}</code> (${src.branch}, ${src.commitDate})`
+    : 'source unknown';
+
+  buildList();
+  if (!applyHash()) {
+    const first = data.autos.find(a => !a.error);
+    if (first) select(first);
+  }
+});
+window.addEventListener('hashchange', applyHash);
+
+function buildList() {
+  const byFolder = new Map();
+  for (const a of data.autos) {
+    if (!byFolder.has(a.folder)) byFolder.set(a.folder, []);
+    byFolder.get(a.folder).push(a);
+  }
+  // Testing last and collapsed; it's scratch work, not real autos.
+  const folders = [...byFolder.keys()].sort((x, y) =>
+    (x === 'Testing') - (y === 'Testing') || x.localeCompare(y));
+
+  const list = document.getElementById('list');
+  for (const f of folders) {
+    const items = byFolder.get(f).sort((a, b) => a.name.localeCompare(b.name));
+    const d = document.createElement('details');
+    d.className = 'folder';
+    if (f !== 'Testing') d.open = true;
+    d.innerHTML = `<summary>${f} (${items.length})</summary>`;
+    for (const a of items) {
+      const el = document.createElement('div');
+      el.className = 'auto' + (a.error ? ' err' : '');
+      el.innerHTML = `<span class="n">${a.name}</span><span class="t">${
+        a.error ? 'error' : a.drivingTimeSec.toFixed(1) + 's'}</span>`;
+      el.onclick = () => select(a, el);
+      d.appendChild(el);
+    }
+    list.appendChild(d);
+  }
+}
+
+function select(a, el) {
+  cur = a; t = 0; playing = false;
+  document.getElementById('play').textContent = 'Play';
+  document.querySelectorAll('.auto.sel').forEach(e => e.classList.remove('sel'));
+  if (el) el.classList.add('sel');
+  else {
+    const idx = [...document.querySelectorAll('.auto .n')].find(n => n.textContent === a.name);
+    if (idx) idx.parentElement.classList.add('sel');
+  }
+  document.getElementById('title').textContent = a.name;
+  document.getElementById('meta').textContent = a.error
+    ? a.error
+    : `${a.folder} · ${a.drivingTimeSec.toFixed(2)}s driving · ${a.paths.length} path${
+        a.paths.length === 1 ? '' : 's'}: ${a.paths.join(' → ')}`;
+  document.getElementById('scrub').value = 0;
+  draw();
+  updateClock();
+}
+
+/** Deep link: #auto=<name>[&t=<seconds>] so a specific moment can be shared. */
+function applyHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  const name = h.get('auto');
+  if (!name) return false;
+  const a = data.autos.find(x => x.name === name);
+  if (!a) return false;
+  select(a);
+  const ts = parseFloat(h.get('t'));
+  if (!isNaN(ts)) {
+    t = Math.max(0, Math.min(ts, totalT()));
+    document.getElementById('scrub').value = totalT() ? (t / totalT()) * 1000 : 0;
+    draw();
+    updateClock();
+  }
+  return true;
+}
+
+function totalT() { return cur && cur.samples.length ? cur.drivingTimeSec : 0; }
+
+function sampleAt(time) {
+  const s = cur.samples;
+  if (!s.length) return null;
+  if (time <= s[0].t) return s[0];
+  for (let i = 1; i < s.length; i++) {
+    if (s[i].t >= time) {
+      const a = s[i - 1], b = s[i], span = b.t - a.t;
+      const f = span <= 1e-9 ? 0 : (time - a.t) / span;
+      let dd = b.deg - a.deg;
+      while (dd > 180) dd -= 360;
+      while (dd < -180) dd += 360;
+      return { t: time, x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f,
+               deg: a.deg + dd * f, v: a.v + (b.v - a.v) * f };
+    }
+  }
+  return s[s.length - 1];
+}
+
+// field metres -> canvas px (FRC +y is up; canvas +y is down)
+const fx = x => x * PX_PER_M;
+const fy = y => canvas.height - y * PX_PER_M;
+
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  ctx.fillStyle = '#232830';
+  ctx.fillRect(0, 0, W, H);
+
+  // 1m grid
+  ctx.strokeStyle = '#2b313b';
+  ctx.lineWidth = 1;
+  for (let x = 1; x < data.field.sizeX; x++) {
+    ctx.beginPath(); ctx.moveTo(fx(x), 0); ctx.lineTo(fx(x), H); ctx.stroke();
+  }
+  for (let y = 1; y < data.field.sizeY; y++) {
+    ctx.beginPath(); ctx.moveTo(0, fy(y)); ctx.lineTo(W, fy(y)); ctx.stroke();
+  }
+
+  // centre line + border
+  ctx.strokeStyle = '#3d444f';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(fx(data.field.sizeX / 2), 0);
+  ctx.lineTo(fx(data.field.sizeX / 2), H); ctx.stroke();
+  ctx.strokeRect(0, 0, W, H);
+
+  if (!cur || !cur.samples.length) return;
+
+  // full trail
+  ctx.strokeStyle = 'rgba(77,163,255,.35)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  cur.samples.forEach((s, i) => i ? ctx.lineTo(fx(s.x), fy(s.y)) : ctx.moveTo(fx(s.x), fy(s.y)));
+  ctx.stroke();
+
+  // travelled trail
+  ctx.strokeStyle = '#4da3ff';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  let started = false;
+  for (const s of cur.samples) {
+    if (s.t > t) break;
+    started ? ctx.lineTo(fx(s.x), fy(s.y)) : (ctx.moveTo(fx(s.x), fy(s.y)), started = true);
+  }
+  ctx.stroke();
+
+  // event markers
+  for (const m of cur.eventMarkers) {
+    const s = sampleAt(m.t);
+    if (!s) continue;
+    ctx.fillStyle = m.t <= t ? '#ffb114' : '#6b7280';
+    ctx.beginPath(); ctx.arc(fx(s.x), fy(s.y), 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c3cad6';
+    ctx.font = '10px ui-sans-serif, system-ui, sans-serif';
+    ctx.fillText(m.name, fx(s.x) + 7, fy(s.y) - 6);
+  }
+
+  // start marker
+  const s0 = cur.samples[0];
+  ctx.strokeStyle = '#4ade80';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(fx(s0.x), fy(s0.y), 6, 0, Math.PI * 2); ctx.stroke();
+
+  drawRobot(sampleAt(t));
+}
+
+function drawRobot(s) {
+  if (!s) return;
+  const w = data.robot.widthM * PX_PER_M, l = data.robot.lengthM * PX_PER_M;
+  ctx.save();
+  ctx.translate(fx(s.x), fy(s.y));
+  ctx.rotate(-s.deg * Math.PI / 180);   // canvas y is inverted
+  ctx.fillStyle = 'rgba(255,177,20,.22)';
+  ctx.strokeStyle = '#ffb114';
+  ctx.lineWidth = 2;
+  ctx.fillRect(-l / 2, -w / 2, l, w);
+  ctx.strokeRect(-l / 2, -w / 2, l, w);
+  // heading / intake direction (robot +x is forward)
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(l / 2, 0); ctx.stroke();
+  ctx.restore();
+}
+
+function frame(ts) {
+  if (playing && cur) {
+    const dt = (ts - last) / 1000 * speed;
+    last = ts;
+    t += dt;
+    if (t >= totalT()) { t = totalT(); playing = false; document.getElementById('play').textContent = 'Play'; }
+    document.getElementById('scrub').value = totalT() ? (t / totalT()) * 1000 : 0;
+    draw();
+    updateClock();
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(ts => { last = ts; frame(ts); });
+
+function updateClock() {
+  const s = cur ? sampleAt(t) : null;
+  document.getElementById('clock').textContent =
+    `${t.toFixed(2)}s / ${totalT().toFixed(2)}s` + (s ? ` · ${s.v.toFixed(2)} m/s` : '');
+}
+
+document.getElementById('play').onclick = () => {
+  if (!cur || !cur.samples.length) return;
+  if (t >= totalT()) t = 0;
+  playing = !playing;
+  last = performance.now();
+  document.getElementById('play').textContent = playing ? 'Pause' : 'Play';
+};
+document.getElementById('scrub').oninput = e => {
+  if (!cur) return;
+  playing = false;
+  document.getElementById('play').textContent = 'Play';
+  t = (e.target.value / 1000) * totalT();
+  draw(); updateClock();
+};
+document.getElementById('speed').onchange = e => speed = parseFloat(e.target.value);
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); document.getElementById('play').click(); }
+});
+</script>
+</body>
+</html>

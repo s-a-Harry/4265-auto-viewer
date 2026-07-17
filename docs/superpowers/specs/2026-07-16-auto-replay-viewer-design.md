@@ -1,7 +1,21 @@
 # FRC 4265 Auto Replay Viewer — Design
 
 **Date:** 2026-07-16
-**Status:** Approved (design), pending implementation plan
+**Status:** MVP built. See README for what actually shipped.
+
+> **MVP deviations from this design.** The core holds — the generator uses the real
+> PathPlannerLib, the viewer does no physics, all 41 autos generate, folders group them, source
+> SHA is stamped. Not yet built:
+>
+> - **Generator is injected into a throwaway clone** of `2026-Robot` by `regen.sh` rather than
+>   being a standalone Gradle project. GradleRIO already resolves PathPlannerLib and the WPILib
+>   natives there; reproducing that resolution standalone was not worth it for an MVP.
+> - **No CI.** `regen.sh` is manual, so the staleness mitigation is only the visible SHA stamp.
+> - **Field is boundary + centre line + 1 m grid.** No REBUILT elements drawn.
+> - **Robot is a square + heading line.** `robotFeatures` (intake, turret) not rendered.
+> - **Golden test not written.** Timings remain unvalidated against the PathPlanner GUI.
+> - Data lives in `viewer/autos.json`, not `data/`. Field size comes from
+>   `FlippingUtil.fieldSizeX/Y` (16.54 × 8.07) rather than the field drawings.
 
 ## Problem
 
