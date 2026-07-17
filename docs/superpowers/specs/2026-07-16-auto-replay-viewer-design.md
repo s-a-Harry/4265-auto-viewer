@@ -36,7 +36,8 @@ preview from that data.
 **Drive team and strategy.** People who know the field. Consequences:
 
 - Timing fidelity is a hard requirement. A replay with invented timing is worse than nothing,
-  because it implies an auto fits in 15 seconds when it may not.
+  because it implies an auto fits in the 20-second autonomous period when it may not.
+  (2026 REBUILT autonomous is **20 s**, not the customary 15 s.)
 - Visual polish is secondary.
 - All 41 autos are shown, including `Testing`, grouped by folder.
 
@@ -199,7 +200,7 @@ nodes with `named` nodes; PathPlanner knows the driving time but not that a shoo
 floor, not a real total. Annotating durations in a config file was considered and deferred until
 the estimates prove necessary.
 
-This means **the app cannot answer "does this auto fit in 15 seconds."** It can only answer
+This means **the app cannot answer "does this auto fit in the 20-second auto period."** It can only answer
 "the driving alone takes at least N seconds." That limit must be legible in the UI, not buried.
 
 ## Decisions

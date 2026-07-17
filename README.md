@@ -39,8 +39,21 @@ already resolves PathPlannerLib and the WPILib natives.
 
 **Times are driving time only.** Named commands (`Shoot`, `Intake`, …) carry no duration in
 PathPlanner data, so an auto's real runtime is longer than what's shown. **This tool cannot tell
-you whether an auto fits in 15 seconds** — it only tells you the driving alone takes at least N
-seconds.
+you whether an auto fits in the 20-second autonomous period** — it only tells you the driving
+alone takes at least N seconds.
+
+That floor is still enough to disqualify some autos outright. Two exceed 20 s on driving alone,
+before any command time is added:
+
+| Auto | Driving time |
+|---|---|
+| `45 Defensive` | 21.67 s |
+| `L Trench 2 Dip + Depot` | 20.74 s |
+
+Several more sit close enough (`R Trench 2 Dips + Outpost` 18.39 s, `L R Back to Middle NC`
+18.37 s, `R Trench 2 Dips` 17.25 s) that adding shoot/intake time will likely push them over.
+Whether that's a real problem depends on the `driveCurrentLimit` question below — if 35 A is
+wrong, these times are all pessimistic.
 
 **Timings are unvalidated against the PathPlanner GUI.** Nobody has yet compared a generated
 total against the number PathPlanner reports for the same auto. Until that golden check is done,
