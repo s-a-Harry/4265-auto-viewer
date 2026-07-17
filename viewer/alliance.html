@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c1b1f">
+<title>4265 Alliance Auto Replay</title>
+<style>
+  :root {
+    --surface: #1c1b1f; --surface-1: #232227; --surface-2: #2b2930;
+    --outline: #49454f; --on-surface: #e6e1e5; --on-surface-dim: #cac4d0;
+    --primary: #d0bcff; --warn: #f2b8b5;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--surface); color: var(--on-surface);
+    font: 14px/1.5 ui-sans-serif, system-ui, Roboto, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; height: 100dvh; overflow: hidden;
+  }
+  header {
+    padding: 10px 16px; border-bottom: 1px solid var(--outline);
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  header .src { color: var(--on-surface-dim); font-size: 11px; opacity: .7; }
+  header a { color: var(--primary); font-size: 12px; margin-left: auto; }
+
+  #pickers { display: flex; gap: 10px; padding: 10px 16px; flex-wrap: wrap; border-bottom: 1px solid var(--outline); }
+  .team { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 5px; }
+  .team label { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .team label .dot { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .team select {
+    background: var(--surface-2); color: var(--on-surface); border: 1px solid var(--outline);
+    border-radius: 8px; padding: 9px; font-size: 13px; min-height: 42px; width: 100%;
+  }
+  .team .time { font-size: 11px; color: var(--on-surface-dim); min-height: 15px; }
+  .team .time.over { color: var(--warn); font-weight: 700; }
+
+  #stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; min-height: 0; min-width: 0; overflow: hidden; }
+  canvas { border-radius: 8px; display: block; transform-origin: center; }
+
+  #approach { padding: 6px 16px; font-size: 12px; color: var(--on-surface-dim); min-height: 28px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  #approach .pair { display: inline-flex; align-items: center; gap: 6px; }
+  #approach .pair.hot { color: var(--warn); font-weight: 700; }
+  #approach .swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+  #controls {
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--outline); display: flex; align-items: center; gap: 12px;
+  }
+  button {
+    background: var(--primary); color: #381e72; border: 0; border-radius: 20px;
+    padding: 10px 20px; font-weight: 700; cursor: pointer; font-size: 14px; min-width: 88px; min-height: 44px;
+  }
+  button:active { filter: brightness(.9); }
+  #scrub { flex: 1; accent-color: var(--primary); min-width: 60px; height: 30px; }
+  #clock { font-variant-numeric: tabular-nums; color: var(--on-surface-dim); min-width: 118px; font-size: 13px; text-align: right; }
+  select#speed { background: var(--surface-2); color: var(--on-surface); border: 1px solid var(--outline); border-radius: 8px; padding: 9px; min-height: 44px; }
+  #note { padding: 6px 16px; background: #2b2416; color: #e3c08a; font-size: 11px; }
+
+  @media (max-width: 640px) {
+    header { padding: 8px 12px; }
+    header a { margin-left: 0; }
+    #pickers { padding: 8px 12px; gap: 8px; }
+    .team { min-width: 100%; }              /* stack the three pickers */
+    #stage { padding: 6px; }
+    #approach { padding: 6px 12px; font-size: 11px; gap: 10px; }
+    #controls { padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); gap: 8px; }
+    button { min-width: 0; padding: 10px 16px; }
+    #clock { min-width: 0; font-size: 12px; }
+    #note { padding: 6px 12px; }
+  }
+  @media (max-width: 400px) { #speed { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>4265 Alliance Auto Replay</h1>
+  <span class="src" id="src"></span>
+  <a href="index.html">single-auto view →</a>
+</header>
+
+<div id="pickers"></div>
+
+<div id="stage"><canvas id="c"></canvas></div>
+
+<div id="approach"></div>
+<div id="note">
+  Robots drive their own paths on one field. <strong>Closest approach</strong> uses bounding
+  circles — treat a flagged pair as "look closer", not a guaranteed hit. Times are driving only.
+</div>
+
+<div id="controls">
+  <button id="play">Play</button>
+  <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Scrub">
+  <span id="clock">0.00 / 0.00s</span>
+  <select id="speed" aria-label="Speed">
+    <option value="0.25">0.25×</option><option value="0.5">0.5×</option>
+    <option value="1" selected>1×</option><option value="2">2×</option>
+  </select>
+</div>
+
+<script>
+const IMG_W = 3508, IMG_H = 1814, PPM = 200, MARGIN = 0.5;
+const RENDER_W = 1754, S = RENDER_W / IMG_W, M_PX = PPM * S;
+const AUTO_PERIOD = 20;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = RENDER_W; canvas.height = Math.round(IMG_H * S);
+
+const fx = x => (x + MARGIN) * PPM * S;
+const fy = y => canvas.height - (y + MARGIN) * PPM * S;
+const rx = x => x * M_PX, ry = y => -y * M_PX;
+const stroke = w => Math.max(1.5, w * M_PX);
+
+let manifest = null, teams = [], t = 0, playing = false, last = 0, speed = 1;
+const field = new Image(); let fieldReady = false;
+
+Promise.all([
+  fetch('teams.json').then(r => r.json()),
+  new Promise(res => { field.onload = () => { fieldReady = true; res(); }; field.onerror = res; field.src = 'field26.png'; })
+]).then(async ([m]) => {
+  manifest = m;
+  teams = await Promise.all(m.teams.map(async td => ({
+    ...td,
+    data: await fetch(td.file).then(r => r.json()),
+    sel: null   // selected auto object
+  })));
+  document.getElementById('src').textContent =
+    teams.map(t => `${t.num}`).join(' · ') + ' — autos as generated from each team\'s repo';
+  buildPickers();
+  // #t=<sec> jumps to a moment — handy for sharing "look at 1.8s" in the pit.
+  const ht = parseFloat(new URLSearchParams(location.hash.slice(1)).get('t'));
+  if (!isNaN(ht)) { t = Math.max(0, Math.min(ht, totalT())); document.getElementById('scrub').value = totalT() ? (t/totalT())*1000 : 0; }
+  layout(); draw(); updateClock();
+});
+
+function buildPickers() {
+  const wrap = document.getElementById('pickers');
+  wrap.innerHTML = '';
+  teams.forEach((team, i) => {
+    const div = document.createElement('div');
+    div.className = 'team';
+    const good = team.data.autos.filter(a => !a.error).sort((a, b) => a.name.localeCompare(b.name));
+    const opts = ['<option value="">— none —</option>']
+      .concat(good.map(a => `<option value="${encodeURIComponent(a.name)}">${a.name} (${a.drivingTimeSec.toFixed(1)}s)</option>`))
+      .join('');
+    div.innerHTML =
+      `<label><span class="dot" style="background:${team.color}"></span>${team.num} ${team.name}</label>
+       <select data-i="${i}">${opts}</select>
+       <div class="time" id="time-${i}"></div>`;
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('select').forEach(sel => sel.onchange = onPick);
+  // preselect first auto for each team so the demo shows something immediately
+  teams.forEach((team, i) => {
+    const sel = wrap.querySelector(`select[data-i="${i}"]`);
+    if (sel.options.length > 1) { sel.selectedIndex = 1; onPick({ target: sel }); }
+  });
+}
+
+function onPick(e) {
+  const i = +e.target.dataset.i;
+  const name = decodeURIComponent(e.target.value);
+  teams[i].sel = name ? teams[i].data.autos.find(a => a.name === name) : null;
+  const td = document.getElementById('time-' + i);
+  if (teams[i].sel) {
+    const over = teams[i].sel.drivingTimeSec > AUTO_PERIOD;
+    td.textContent = `${teams[i].sel.drivingTimeSec.toFixed(2)}s driving` + (over ? ' — over 20s' : '');
+    td.className = 'time' + (over ? ' over' : '');
+  } else { td.textContent = ''; td.className = 'time'; }
+  t = 0; playing = false; document.getElementById('play').textContent = 'Play';
+  document.getElementById('scrub').value = 0;
+  computeApproach();
+  draw(); updateClock();
+}
+
+function totalT() {
+  return Math.max(0, ...teams.filter(t => t.sel).map(t => t.sel.drivingTimeSec));
+}
+
+function sampleAt(auto, time) {
+  const s = auto.samples;
+  if (!s.length) return null;
+  if (time >= s[s.length - 1].t) return s[s.length - 1];   // hold final pose
+  if (time <= s[0].t) return s[0];
+  for (let i = 1; i < s.length; i++) {
+    if (s[i].t >= time) {
+      const a = s[i - 1], b = s[i], span = b.t - a.t, f = span <= 1e-9 ? 0 : (time - a.t) / span;
+      let dd = b.deg - a.deg; while (dd > 180) dd -= 360; while (dd < -180) dd += 360;
+      return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, deg: a.deg + dd * f, v: a.v + (b.v - a.v) * f };
+    }
+  }
+  return s[s.length - 1];
+}
+
+// bounding-circle radius of a team's robot
+function robotR(team) {
+  return 0.5 * Math.hypot(team.data.robot.widthM, team.data.robot.lengthM);
+}
+
+// closest approach per pair across the whole timeline
+let approach = [];
+function computeApproach() {
+  approach = [];
+  const active = teams.filter(t => t.sel);
+  const tot = totalT();
+  for (let a = 0; a < active.length; a++) for (let b = a + 1; b < active.length; b++) {
+    let min = Infinity, at = 0;
+    for (let time = 0; time <= tot; time += 0.05) {
+      const pa = sampleAt(active[a].sel, time), pb = sampleAt(active[b].sel, time);
+      if (!pa || !pb) continue;
+      const d = Math.hypot(pa.x - pb.x, pa.y - pb.y);
+      if (d < min) { min = d; at = time; }
+    }
+    approach.push({ a: active[a], b: active[b], min, at, touch: robotR(active[a]) + robotR(active[b]) });
+  }
+  renderApproach();
+}
+
+function renderApproach() {
+  const el = document.getElementById('approach');
+  if (!approach.length) { el.innerHTML = '<span style="opacity:.6">Pick at least two autos to check for collisions.</span>'; return; }
+  el.innerHTML = approach.map(p => {
+    const hot = p.min < p.touch;
+    return `<span class="pair ${hot ? 'hot' : ''}">
+      <span class="swatch" style="background:${p.a.color}"></span>${p.a.num}
+      <span class="swatch" style="background:${p.b.color}"></span>${p.b.num}
+      · closest ${p.min.toFixed(2)}m @ ${p.at.toFixed(1)}s${hot ? ' ⚠ overlap' : ''}</span>`;
+  }).join('');
+}
+
+function layout() {
+  const stage = document.getElementById('stage'), cs = getComputedStyle(stage);
+  const aw = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const ah = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  if (aw <= 0 || ah <= 0) return;
+  const rotate = ah > aw;
+  const scale = rotate ? Math.min(ah / canvas.width, aw / canvas.height)
+                       : Math.min(aw / canvas.width, ah / canvas.height);
+  canvas.style.width = (canvas.width * scale) + 'px';
+  canvas.style.height = (canvas.height * scale) + 'px';
+  canvas.style.transform = rotate ? 'rotate(90deg)' : '';
+}
+window.addEventListener('resize', () => { layout(); });
+window.addEventListener('orientationchange', () => { layout(); });
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (fieldReady) ctx.drawImage(field, 0, 0, canvas.width, canvas.height);
+  else { ctx.fillStyle = '#2b2930'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+
+  const active = teams.filter(t => t.sel);
+
+  // trails, team-coloured (travelled solid, upcoming faint)
+  for (const team of active) {
+    const s = team.sel.samples;
+    ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.strokeStyle = team.color;
+    for (let i = 1; i < s.length; i++) {
+      ctx.globalAlpha = s[i].t <= t ? 0.95 : 0.25;
+      ctx.beginPath(); ctx.moveTo(fx(s[i-1].x), fy(s[i-1].y)); ctx.lineTo(fx(s[i].x), fy(s[i].y)); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    // start dot
+    ctx.fillStyle = team.color; ctx.strokeStyle = '#1c1b1f'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(fx(s[0].x), fy(s[0].y), 6, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  }
+
+  // collision links: draw a red line between currently-overlapping robots
+  for (const p of approach) {
+    const pa = sampleAt(p.a.sel, t), pb = sampleAt(p.b.sel, t);
+    if (!pa || !pb) continue;
+    const d = Math.hypot(pa.x - pb.x, pa.y - pb.y);
+    if (d < p.touch) {
+      ctx.strokeStyle = '#f2b8b5'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.moveTo(fx(pa.x), fy(pa.y)); ctx.lineTo(fx(pb.x), fy(pb.y)); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // robots
+  for (const team of active) drawRobot(team, sampleAt(team.sel, t));
+
+  // labels above robots
+  ctx.font = '700 14px ui-sans-serif, system-ui, sans-serif';
+  for (const team of active) {
+    const s = sampleAt(team.sel, t); if (!s) continue;
+    const label = String(team.num);
+    const w = ctx.measureText(label).width;
+    const px = fx(s.x), py = fy(s.y) - team.data.robot.widthM * M_PX / 2 - 8;
+    ctx.fillStyle = 'rgba(28,27,31,.85)'; ctx.fillRect(px - w/2 - 4, py - 13, w + 8, 17);
+    ctx.fillStyle = team.color; ctx.textAlign = 'center'; ctx.fillText(label, px, py);
+  }
+  ctx.textAlign = 'left';
+}
+
+function drawRobot(team, s) {
+  if (!s) return;
+  const w = team.data.robot.widthM * M_PX, l = team.data.robot.lengthM * M_PX;
+  const done = t >= team.sel.drivingTimeSec - 1e-6;
+  ctx.save();
+  ctx.translate(fx(s.x), fy(s.y));
+  ctx.rotate(-s.deg * Math.PI / 180);
+  ctx.globalAlpha = done ? 0.5 : 1;   // fade a robot that has finished its auto
+
+  ctx.shadowColor = 'rgba(0,0,0,.9)'; ctx.shadowBlur = 12;
+  ctx.fillStyle = 'rgba(28,27,31,.78)'; ctx.fillRect(-l/2, -w/2, l, w);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = hexA(team.color, 0.18); ctx.fillRect(-l/2, -w/2, l, w);
+  ctx.strokeStyle = team.color; ctx.lineWidth = 3; ctx.strokeRect(-l/2, -w/2, l, w);
+
+  for (const f of (team.data.robot.features || [])) drawFeature(f, team.color);
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawFeature(f, color) {
+  const d = f.data || {};
+  ctx.strokeStyle = color; ctx.fillStyle = hexA(color, 0.45); ctx.lineCap = 'butt';
+  if (f.type === 'line' && d.start && d.end) {
+    ctx.lineWidth = stroke(d.strokeWidth);
+    ctx.beginPath(); ctx.moveTo(rx(d.start.x), ry(d.start.y)); ctx.lineTo(rx(d.end.x), ry(d.end.y)); ctx.stroke();
+  } else if (f.type === 'circle' && d.center) {
+    ctx.lineWidth = stroke(d.strokeWidth);
+    ctx.beginPath(); ctx.arc(rx(d.center.x), ry(d.center.y), d.radius * M_PX, 0, Math.PI*2);
+    d.filled ? ctx.fill() : ctx.stroke();
+  } else if (f.type === 'rounded_rect' && d.center && d.size) {
+    const ex = d.size.length * M_PX, ey = d.size.width * M_PX;   // PathPlanner swaps length->x, width->y
+    const cx = rx(d.center.x), cy = ry(d.center.y), r = (d.borderRadius || 0) * M_PX;
+    ctx.lineWidth = stroke(d.strokeWidth);
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(cx - ex/2, cy - ey/2, ex, ey, r); else ctx.rect(cx - ex/2, cy - ey/2, ex, ey);
+    d.filled ? ctx.fill() : ctx.stroke();
+  }
+}
+
+function hexA(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+function frame(ts) {
+  if (playing) {
+    t += (ts - last) / 1000 * speed; last = ts;
+    if (t >= totalT()) { t = totalT(); playing = false; document.getElementById('play').textContent = 'Play'; }
+    document.getElementById('scrub').value = totalT() ? (t/totalT())*1000 : 0;
+    draw(); updateClock();
+  } else last = ts;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(ts => { last = ts; frame(ts); });
+
+function updateClock() {
+  document.getElementById('clock').textContent = `${t.toFixed(2)} / ${totalT().toFixed(2)}s`;
+}
+
+document.getElementById('play').onclick = () => {
+  if (totalT() <= 0) return;
+  if (t >= totalT()) t = 0;
+  playing = !playing; last = performance.now();
+  document.getElementById('play').textContent = playing ? 'Pause' : 'Play';
+};
+document.getElementById('scrub').oninput = e => {
+  playing = false; document.getElementById('play').textContent = 'Play';
+  t = (e.target.value / 1000) * totalT(); draw(); updateClock();
+};
+document.getElementById('speed').onchange = e => speed = parseFloat(e.target.value);
+window.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); document.getElementById('play').click(); } });
+</script>
+</body>
+</html>

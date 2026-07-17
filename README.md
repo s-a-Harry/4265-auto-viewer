@@ -18,6 +18,34 @@ java Serve.java 8265 viewer      # -> http://localhost:8265
 `regen.sh` needs the WPILib JDK (defaults to `/c/Users/Public/wpilib/2026/jdk`). `viewer/` is
 static — any file server works, and `autos.json` is committed so the site runs without Java.
 
+## Alliance view (multi-team)
+
+`alliance.html` plays **three teams' autos at once on one field** to check for collisions and
+coordination — the thing PathPlanner itself can't do. Pick one auto per team; each robot drives
+in its team colour with its own dimensions and features, on a shared clock. A **closest-approach**
+readout reports the minimum centre-to-centre distance per pair over the whole run (bounding-circle
+based — a flag means "look closer", not a guaranteed hit), and overlapping robots get a red link.
+
+Other teams' data comes from their own repos:
+
+```bash
+./generate-team.sh FRC2539/2026-rebuilt 2539     # -> viewer/autos-2539.json
+```
+
+It swaps their `pathplanner` folder through 4265's build, so trajectories use **their** robot
+config but the identical PathPlannerLib. **2026 autos only** — a 2025 auto is on a different
+field and lands in the wrong place. Then add the file to `viewer/teams.json` with a colour.
+The MVP ships 4265 + 2539 (Krypton Cougars) + 117 (Steel Dragons).
+
+### Which WVROX teams have public autos
+
+Of the 30 teams at WVROX, a GitHub sweep (verified against each project's `.wpilib` team number,
+so wrong-team repos are rejected) found **9 with public PathPlanner autos**: 117, 620, 1086,
+1466, 1533, 2539, 6239, 8728, and 4265. Only some are current-season 2026 (117, 620, 1466, 2539,
+4265); the rest are 2025 and can't share the 2026 field. This confirms the earlier call: a
+"browse any opponent's autos" tool isn't viable — most teams post nothing, and the reliable path
+is alliance partners sharing files at the event.
+
 Deep link to a moment: `#auto=Bumpy%20Ride%20L-R&t=3.5`
 
 ## How it works
