@@ -77,6 +77,24 @@ segments (carrying end velocity between them), and samples pose/heading/velocity
 `regen.sh` injects it into a throwaway clone of the robot repo, because that's where GradleRIO
 already resolves PathPlannerLib and the WPILib natives.
 
+## Shot animation
+
+Robots fire a Fuel projectile at the Hub when their auto says to shoot. What's real and what
+isn't:
+
+- **When (accurate):** shot times come from each auto's own data — PathPlanner event markers
+  placed mid-path, plus named commands (`Shoot`, `AimAndShoot`, `shoot`, `alignAndShoot`, …)
+  timestamped at their cumulative path time. The generator walks the whole command tree, not
+  just the paths, and honours `wait` durations.
+- **From where (accurate):** the projectile starts at the robot's real position at that instant.
+- **To where (assumed):** the target is the alliance Hub, measured from the field image at about
+  (4.65, 4.05) m (mirrored for the red half). The actual turret aim angle isn't in the data, so
+  "aim at the Hub" is an assumption, not a measurement.
+- **Flight time (cosmetic):** a fixed 0.45 s, not physical; the top-down view has no shot arc.
+- **Gaps:** a team that shoots via a command this tool doesn't recognise, or (like 1466) has no
+  shoot marker/command in its auto at all, shows no shots. Commands inside concurrent groups are
+  timed at their position in sequence — exact for sequential autos, approximate otherwise.
+
 ## Read this before trusting a number
 
 **Times are driving time only.** Named commands (`Shoot`, `Intake`, …) carry no duration in

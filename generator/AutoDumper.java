@@ -106,18 +106,37 @@ public class AutoDumper {
 
   private static String dumpAuto(JSONObject root, String name, String folder, RobotConfig config)
       throws Exception {
-    List<String> pathNames = new ArrayList<>();
+    // Walk the whole command tree in order, not just the paths, so named commands
+    // (Shoot, AimAndShoot, ...) can be timestamped at their cumulative path time.
+    List<Object[]> steps = new ArrayList<>();
     Object cmd = root.get("command");
-    if (cmd instanceof JSONObject) collectPaths((JSONObject) cmd, pathNames);
+    if (cmd instanceof JSONObject) collectSteps((JSONObject) cmd, steps);
+
+    List<String> pathNames = new ArrayList<>();
+    for (Object[] s : steps) if (s[0].equals("path")) pathNames.add((String) s[1]);
     if (pathNames.isEmpty()) throw new IllegalStateException("auto references no paths");
 
     List<String> samples = new ArrayList<>();
     List<String> markers = new ArrayList<>();
+    List<String> commands = new ArrayList<>();
     double tOffset = 0.0;
     ChassisSpeeds speeds = new ChassisSpeeds();
     Rotation2d rot = null;
 
-    for (String pathName : pathNames) {
+    for (Object[] step : steps) {
+      String kind = (String) step[0];
+
+      if (kind.equals("cmd")) {
+        // A named command fires once the preceding paths have finished (tOffset).
+        commands.add("{\"t\": " + r3(tOffset) + ", \"name\": " + q((String) step[1]) + "}");
+        continue;
+      }
+      if (kind.equals("wait")) {
+        tOffset += (Double) step[1];   // waits have a real, known duration
+        continue;
+      }
+
+      String pathName = (String) step[1];
       PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
       if (rot == null) {
         rot = path.getIdealStartingState() != null
@@ -166,6 +185,7 @@ public class AutoDumper {
         + ", \"drivingTimeSec\": " + r3(tOffset)
         + ", \"error\": null"
         + ", \"eventMarkers\": [" + String.join(", ", markers) + "]"
+        + ", \"commands\": [" + String.join(", ", commands) + "]"
         + ", \"samples\": [" + String.join(", ", samples) + "]}";
   }
 
@@ -183,20 +203,34 @@ public class AutoDumper {
     return states.get(states.size() - 1);
   }
 
-  private static void collectPaths(JSONObject cmd, List<String> out) {
+  /**
+   * Flatten the command tree into ordered steps: {"path", name}, {"cmd", name}, {"wait", secs}.
+   * Groups (sequential/parallel/deadline/race) are walked in child order — exact for sequential,
+   * an approximation for concurrent groups, which is good enough for shot timing.
+   */
+  private static void collectSteps(JSONObject cmd, List<Object[]> steps) {
     String type = (String) cmd.get("type");
     JSONObject data = (JSONObject) cmd.get("data");
-    if (data == null) return;
-    if ("path".equals(type)) {
-      Object pn = data.get("pathName");
-      if (pn != null) out.add(pn.toString());
-      return;
-    }
-    Object children = data.get("commands");
-    if (children instanceof JSONArray) {
-      for (Object c : (JSONArray) children) {
-        if (c instanceof JSONObject) collectPaths((JSONObject) c, out);
-      }
+    if (type == null) return;
+    switch (type) {
+      case "path":
+        if (data != null && data.get("pathName") != null)
+          steps.add(new Object[]{"path", data.get("pathName").toString()});
+        return;
+      case "named":
+        if (data != null && data.get("name") != null)
+          steps.add(new Object[]{"cmd", data.get("name").toString()});
+        return;
+      case "wait":
+        double w = (data != null && data.get("waitTime") instanceof Number)
+            ? ((Number) data.get("waitTime")).doubleValue() : 0.0;
+        steps.add(new Object[]{"wait", w});
+        return;
+      default:
+        if (data != null && data.get("commands") instanceof JSONArray) {
+          for (Object c : (JSONArray) data.get("commands"))
+            if (c instanceof JSONObject) collectSteps((JSONObject) c, steps);
+        }
     }
   }
 

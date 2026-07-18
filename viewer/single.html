@@ -220,6 +220,23 @@ const RENDER_W = 1754;                 // half-res: crisp enough, easy on phones
 const S = RENDER_W / IMG_W;
 const AUTO_PERIOD = 20;                // 2026 REBUILT
 
+// Blue Hub (goal) measured from field26.png; the red Hub is its mirror. Fuel is
+// shot here, so a shot's target is whichever Hub is on the robot's half.
+const HUB = { x: 4.65, y: 4.05 };
+const SHOT_FLIGHT = 0.45;              // visual flight time; not from data
+function hubFor(x) { return x < 16.54 / 2 ? HUB : { x: 16.54 - HUB.x, y: HUB.y }; }
+// A shot event: any marker/command named like a shot, but not a "stop". Covers
+// Shoot, AimAndShoot, alignAndShoot, shoot, SHOOOT (sho+t), etc.
+function isShot(name) { return /sho+t|score|fire|launch/i.test(name) && !/stop/i.test(name); }
+// Merge markers + commands into deduped, sorted shot times for one auto.
+function shotTimes(auto) {
+  const raw = [...(auto.eventMarkers || []), ...(auto.commands || [])]
+    .filter(e => isShot(e.name)).map(e => e.t).sort((a, b) => a - b);
+  const out = [];
+  for (const ts of raw) if (!out.length || ts - out[out.length - 1] > 0.3) out.push(ts);
+  return out;
+}
+
 let data = null, cur = null, t = 0, playing = false, last = 0, speed = 1;
 const field = new Image();
 let fieldReady = false;
@@ -320,6 +337,7 @@ function buildList() {
 
 function select(a, el) {
   cur = a; t = 0; playing = false;
+  a._shots = shotTimes(a);
   document.getElementById('play').textContent = 'Play';
   document.querySelectorAll('.auto.sel').forEach(e => e.classList.remove('sel'));
   (el || document.querySelector(`.auto[data-name="${CSS.escape(a.name)}"]`))
@@ -421,6 +439,7 @@ function draw() {
   }
 
   drawRobot(sampleAt(t));
+  drawShots(cur, t, '#ffd54a');
 
   // Labels only near the playhead — an auto revisits the same spots, so labelling
   // every marker collides them into mush.
@@ -435,6 +454,42 @@ function draw() {
     ctx.fillRect(tx - 4, ty - 12, w + 8, 17);
     ctx.fillStyle = '#e6e1e5';
     ctx.fillText(m.name, tx, ty);
+  }
+}
+
+/**
+ * Draw a Fuel projectile for each shot firing near time `t`. The shot's TIME is
+ * from the auto's markers/commands and its origin is the robot's real position at
+ * that instant; the flight duration is a fixed visual constant and the target is
+ * the alliance Hub (aim angle isn't in the data).
+ */
+function drawShots(auto, t, color) {
+  const shots = auto && auto._shots || [];
+  for (const ts of shots) {
+    const dt = t - ts;
+    if (dt < 0 || dt > SHOT_FLIGHT) continue;
+    const from = sampleAt(ts);
+    if (!from) continue;
+    const to = hubFor(from.x);
+    const f = dt / SHOT_FLIGHT;
+    const px = fx(from.x + (to.x - from.x) * f), py = fy(from.y + (to.y - from.y) * f);
+
+    // muzzle flash at the robot as it fires
+    if (f < 0.22) {
+      ctx.fillStyle = 'rgba(255,213,74,' + (0.6 * (1 - f / 0.22)) + ')';
+      ctx.beginPath(); ctx.arc(fx(from.x), fy(from.y), 10 + 26 * f, 0, Math.PI * 2); ctx.fill();
+    }
+    // the Fuel: gold ball that shrinks slightly as it "rises" toward the Hub
+    ctx.fillStyle = color;
+    ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 1.5;
+    const r = 8 - 2 * f;
+    ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // arrival splash at the Hub
+    if (f > 0.82) {
+      const g = (f - 0.82) / 0.18;
+      ctx.strokeStyle = 'rgba(255,213,74,' + (0.9 * (1 - g)) + ')'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(fx(to.x), fy(to.y), 6 + 20 * g, 0, Math.PI * 2); ctx.stroke();
+    }
   }
 }
 
