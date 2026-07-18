@@ -78,7 +78,7 @@
 <header>
   <h1>4265 Alliance Auto Replay</h1>
   <span class="src" id="src"></span>
-  <a href="index.html">single-auto view →</a>
+  <a href="index.html">← menu</a>
 </header>
 
 <div id="pickers"></div>
@@ -123,13 +123,21 @@ Promise.all([
   new Promise(res => { field.onload = () => { fieldReady = true; res(); }; field.onerror = res; field.src = 'field26.png'; })
 ]).then(async ([m]) => {
   manifest = m;
-  teams = await Promise.all(m.teams.map(async td => ({
+  // ?teams=4265,117,2539 chooses the subset (from the menu). Only teams with data.
+  const want = (new URLSearchParams(location.search).get('teams') || '')
+    .split(',').map(s => s.trim()).filter(Boolean).map(Number);
+  let chosen = m.teams.filter(t => t.file);
+  if (want.length) {
+    const w = chosen.filter(t => want.includes(t.num));
+    if (w.length) chosen = w;
+  }
+  teams = await Promise.all(chosen.map(async td => ({
     ...td,
     data: await fetch(td.file).then(r => r.json()),
     sel: null   // selected auto object
   })));
   document.getElementById('src').textContent =
-    teams.map(t => `${t.num}`).join(' · ') + ' — autos as generated from each team\'s repo';
+    teams.map(t => `${t.num}`).join(' · ') + ' — autos generated from each team\'s repo';
   buildPickers();
   // #t=<sec> jumps to a moment — handy for sharing "look at 1.8s" in the pit.
   const ht = parseFloat(new URLSearchParams(location.hash.slice(1)).get('t'));

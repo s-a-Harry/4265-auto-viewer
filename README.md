@@ -18,13 +18,22 @@ java Serve.java 8265 viewer      # -> http://localhost:8265
 `regen.sh` needs the WPILib JDK (defaults to `/c/Users/Public/wpilib/2026/jdk`). `viewer/` is
 static — any file server works, and `autos.json` is committed so the site runs without Java.
 
+## Pages
+
+- **`index.html`** — menu. Pick which teams to replay together, then "Replay together". Each
+  card links to that team's own view. Unavailable teams (no usable autos) are shown greyed with
+  the reason.
+- **`single.html?team=<n>`** — one team's autos, velocity-coloured, scrub/play (defaults to 4265).
+- **`alliance.html?teams=<csv>`** — the chosen teams' autos at once on one field.
+
 ## Alliance view (multi-team)
 
-`alliance.html` plays **three teams' autos at once on one field** to check for collisions and
+`alliance.html` plays **several teams' autos at once on one field** to check for collisions and
 coordination — the thing PathPlanner itself can't do. Pick one auto per team; each robot drives
 in its team colour with its own dimensions and features, on a shared clock. A **closest-approach**
 readout reports the minimum centre-to-centre distance per pair over the whole run (bounding-circle
 based — a flag means "look closer", not a guaranteed hit), and overlapping robots get a red link.
+The team subset comes from the menu via `?teams=4265,117,2539`.
 
 Other teams' data comes from their own repos:
 
@@ -34,8 +43,13 @@ Other teams' data comes from their own repos:
 
 It swaps their `pathplanner` folder through 4265's build, so trajectories use **their** robot
 config but the identical PathPlannerLib. **2026 autos only** — a 2025 auto is on a different
-field and lands in the wrong place. Then add the file to `viewer/teams.json` with a colour.
-The MVP ships 4265 + 2539 (Krypton Cougars) + 117 (Steel Dragons).
+field and lands in the wrong place. Then add the file to `viewer/teams.json` with a colour
+(or a `"unavailable"` reason and no `file` to show it greyed in the menu).
+
+Ships with the WVROX teams that have usable 2026 autos: 4265, 117 (Steel Dragons), 1466 (Webb
+Robotics), 2539 (Krypton Cougars). 620 (Warbots) is listed but unavailable — its repo has only
+PathPlanner's placeholder "Example Auto" and an incomplete config (no swerve module positions,
+which makes `RobotConfig.fromGUISettings()` throw).
 
 ### Which WVROX teams have public autos
 

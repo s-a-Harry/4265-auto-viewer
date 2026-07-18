@@ -1,8 +1,10 @@
 {
   "field": {"sizeX": 16.54, "sizeY": 8.07},
   "teams": [
-    {"num": 4265, "name": "Secret City Wildbots", "file": "autos.json",      "color": "#d0bcff"},
-    {"num": 2539, "name": "Krypton Cougars",      "file": "autos-2539.json", "color": "#4da3ff"},
-    {"num": 117,  "name": "Steel Dragons",        "file": "autos-117.json",  "color": "#4ade80"}
+    {"num": 4265, "name": "Secret City Wildbots", "file": "autos.json",      "color": "#d0bcff", "home": true},
+    {"num": 117,  "name": "Steel Dragons",        "file": "autos-117.json",  "color": "#4ade80"},
+    {"num": 620,  "name": "Warbots",              "color": "#ffa726", "unavailable": "repo has only PathPlanner's placeholder \"Example Auto\" and an incomplete config"},
+    {"num": 1466, "name": "Webb Robotics",        "file": "autos-1466.json", "color": "#ec407a"},
+    {"num": 2539, "name": "Krypton Cougars",      "file": "autos-2539.json", "color": "#4da3ff"}
   ]
 }

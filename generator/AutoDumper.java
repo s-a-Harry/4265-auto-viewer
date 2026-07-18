@@ -38,7 +38,17 @@ public class AutoDumper {
   public static void main(String[] args) throws Exception {
     String outPath = args.length > 0 ? args[0] : "build/autos.json";
 
-    RobotConfig config = RobotConfig.fromGUISettings();
+    RobotConfig config;
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Throwable e) {
+      // e.g. a settings.json missing swerve module positions (flModuleX, ...) —
+      // PathPlannerLib NPEs deep inside. Fail with a clear message, not a stack trace.
+      System.err.println("Cannot load robot config from settings.json — likely an "
+          + "incomplete PathPlanner config (missing module positions). Skipping. [" + e + "]");
+      System.exit(2);
+      return;
+    }
     System.out.println("Robot config: mass=" + config.massKG + "kg MOI=" + config.MOI
         + " modules=" + config.numModules);
 
