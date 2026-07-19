@@ -1,0 +1,37 @@
+name: Deploy viewer to GitHub Pages
+
+# Publishes the static viewer/ folder. It does NOT regenerate auto data — that
+# needs the WPILib toolchain and each team's repo, so run regen.sh /
+# generate-team.sh locally and commit; this workflow ships what's committed.
+
+on:
+  push:
+    branches: [main]
+    paths: ["viewer/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true   # turn on Pages on first run so no manual setup is needed
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: viewer
+      - id: deployment
+        uses: actions/deploy-pages@v4
