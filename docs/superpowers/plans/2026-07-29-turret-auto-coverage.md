@@ -450,8 +450,12 @@ def test_map_reports_the_measured_counts(dom):
     assert "36" in text and "31" in text and "18" in text
 
 
-def test_no_uncaught_error_banner(dom):
-    assert 'id="fatal" hidden' in dom or 'id="fatal"' not in dom.split("<body")[0]
+def test_no_fatal_load_error(dom):
+    """The fatal div stays hidden and empty when all fetches succeed."""
+    m = re.search(r'<div id="fatal"([^>]*)>(.*?)</div>', dom, re.S)
+    assert m, "fatal div missing from the page"
+    assert "hidden" in m.group(1), f"fatal banner is showing: {m.group(2)[:200]}"
+    assert m.group(2).strip() == ""
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
@@ -1339,7 +1343,9 @@ Append to `tests/test_page_smoke.py`:
 
 ```python
 def test_field_tab_renders_thirty_bars(dom):
-    assert dom.count('class="bar"') == 30
+    # No closing quote in the needle: the home bar renders class="bar home",
+    # so matching on 'class="bar"' would silently count only 29.
+    assert dom.count('class="bar') == 30
 
 
 def test_field_marks_the_top_quartile_line(dom):
