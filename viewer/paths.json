@@ -1,0 +1,1421 @@
+{
+ "generatedAt": "2026-07-29T15:40:37Z",
+ "counts": {
+  "files": 85,
+  "used": 67,
+  "orphans": 18,
+  "green": 36,
+  "yellow": 31
+ },
+ "paths": [
+  {
+   "name": "10ft path",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "45 Dip from L Bump",
+   "cls": "yellow",
+   "rotationTargets": 6,
+   "waypoints": 6,
+   "startRot": -45.0,
+   "endRot": 45.0,
+   "usedBy": [
+    "45 Defensive"
+   ]
+  },
+  {
+   "name": "45 to L Bump",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": -135.0,
+   "endRot": -45.0,
+   "usedBy": [
+    "45 Defensive"
+   ]
+  },
+  {
+   "name": "45 to Mid",
+   "cls": "yellow",
+   "rotationTargets": 3,
+   "waypoints": 4,
+   "startRot": 45.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "45 Defensive",
+    "L Trench 2 Dip + Depot"
+   ]
+  },
+  {
+   "name": "Backup shoot 8",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "Shoot 8 + Plow"
+   ]
+  },
+  {
+   "name": "Center to Depot",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 180.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Center to Depot"
+   ]
+  },
+  {
+   "name": "Circle",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 5,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Copy of 45 Dip from L Bump",
+   "cls": "yellow",
+   "rotationTargets": 3,
+   "waypoints": 6,
+   "startRot": -45.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "L Trench 2 Dip",
+    "L Trench 2 Dip + Depot"
+   ]
+  },
+  {
+   "name": "Copy of 45 to L Bump",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -135.0,
+   "endRot": -45.0,
+   "usedBy": [
+    "L Trench Defensive"
+   ]
+  },
+  {
+   "name": "Copy of 45 to Mid",
+   "cls": "grey",
+   "rotationTargets": 3,
+   "waypoints": 4,
+   "startRot": 180.0,
+   "endRot": -90.0,
+   "usedBy": []
+  },
+  {
+   "name": "Copy of Circle",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 5,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Copy of L Trench over Bump",
+   "cls": "grey",
+   "rotationTargets": 2,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -45.0,
+   "usedBy": []
+  },
+  {
+   "name": "Copy of R Trench Dip",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 0.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "Shoot 8 R Dip"
+   ]
+  },
+  {
+   "name": "Copy of R Trench Reverse (over bump)",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": 90.0,
+   "endRot": 160.0,
+   "usedBy": [
+    "R Trench 2 Dips",
+    "R Trench 2 Dips + Outpost",
+    "R Trench Outpost",
+    "Shoot 8 R Trench 2 Dips"
+   ]
+  },
+  {
+   "name": "Depot Backwards + Ocilation",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 180.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Center to Depot"
+   ]
+  },
+  {
+   "name": "Dip 3 to Depot to Mid",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 3,
+   "startRot": 180.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Dippy Doo"
+   ]
+  },
+  {
+   "name": "Fast Away",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "Fast Away"
+   ]
+  },
+  {
+   "name": "five ft path",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Flippin Awesome",
+   "cls": "grey",
+   "rotationTargets": 5,
+   "waypoints": 6,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Front end R Trench Reverse",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 2,
+   "startRot": 90.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Back up Simple Right + Outpost",
+    "SMR 1",
+    "Simple Right + Outpost",
+    "Simple Right + Sweep"
+   ]
+  },
+  {
+   "name": "L Bump 45 to Depot",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 3,
+   "startRot": -45.0,
+   "endRot": -45.0,
+   "usedBy": [
+    "45 Defensive",
+    "L Trench 2 Dip + Depot"
+   ]
+  },
+  {
+   "name": "L Bump Dip",
+   "cls": "yellow",
+   "rotationTargets": 3,
+   "waypoints": 6,
+   "startRot": -45.0,
+   "endRot": -45.0,
+   "usedBy": [
+    "L Bump Dip"
+   ]
+  },
+  {
+   "name": "L Bump Plow P.1",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 4,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Bumpy Ride L-R"
+   ]
+  },
+  {
+   "name": "L Bump Plow P.2",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 3,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Bumpy Ride L-R"
+   ]
+  },
+  {
+   "name": "L Bump to Depot to Climb",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 4,
+   "startRot": 180.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "2 Dips",
+    "Bumpy Ride R-L"
+   ]
+  },
+  {
+   "name": "L Trench + Depot + Pickup",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 180.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "L R Back to Middle NC",
+    "New Auto",
+    "Simple L NC"
+   ]
+  },
+  {
+   "name": "L Trench + Plow",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 3,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Plow L Trench",
+    "Plow L Trench into Outpost"
+   ]
+  },
+  {
+   "name": "L Trench 45",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": -90.0,
+   "endRot": -135.0,
+   "usedBy": [
+    "45 Defensive",
+    "L Trench Defensive"
+   ]
+  },
+  {
+   "name": "L Trench Back to Mid",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 4,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "L R Back to Middle NC"
+   ]
+  },
+  {
+   "name": "L Trench Dip 1",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 3,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "2 Dips",
+    "Dippy Doo"
+   ]
+  },
+  {
+   "name": "L Trench Dip 2",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "2 Dips",
+    "Dippy Doo"
+   ]
+  },
+  {
+   "name": "L Trench Dip 3 and Push",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 5,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Dippy Doo"
+   ]
+  },
+  {
+   "name": "L Trench Face Forwards",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 0.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "L Trench 2 Dip",
+    "L Trench 2 Dip + Depot"
+   ]
+  },
+  {
+   "name": "L Trench from R Plow",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 90.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Plow R Trench"
+   ]
+  },
+  {
+   "name": "L Trench over Bump",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -45.0,
+   "usedBy": [
+    "L Trench 2 Dip",
+    "L Trench 2 Dip + Depot",
+    "Slow Lob"
+   ]
+  },
+  {
+   "name": "L Trench RDip 1",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 3,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "2 Dips",
+    "Dippy Doo"
+   ]
+  },
+  {
+   "name": "L Trench RDip 2",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "2 Dips",
+    "Dippy Doo"
+   ]
+  },
+  {
+   "name": "L Trench Reverse",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "L R Back to Middle NC",
+    "New Auto",
+    "Simple L NC",
+    "Simple Left",
+    "Simple left + Depot"
+   ]
+  },
+  {
+   "name": "L Trench Slow Lob",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 3,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Slow Lob"
+   ]
+  },
+  {
+   "name": "L Trench to Depot to Mid",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 4,
+   "startRot": 180.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Plow R Trench",
+    "Simple left + Depot"
+   ]
+  },
+  {
+   "name": "L Trench",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 3,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "L R Back to Middle NC",
+    "New Auto",
+    "Simple L NC",
+    "Simple Left",
+    "Simple left + Depot"
+   ]
+  },
+  {
+   "name": "New New New New Path",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "New New New Path",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "New New Path",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "New Path",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Outpost + Shoot",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": 180.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Back up Simple Right + Outpost",
+    "Outpost",
+    "Plow L Trench into Outpost",
+    "Quarter R Trench",
+    "SMR 1",
+    "Simple Right + Outpost",
+    "Simple Right + Sweep"
+   ]
+  },
+  {
+   "name": "Outpost after R Bump",
+   "cls": "grey",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": 90.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Outpost Sweep",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 180.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "Simple Right + Sweep"
+   ]
+  },
+  {
+   "name": "Outpost to hub",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 180.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Plow L Trench into Outpost"
+   ]
+  },
+  {
+   "name": "Outpost to Mid Dip",
+   "cls": "yellow",
+   "rotationTargets": 3,
+   "waypoints": 3,
+   "startRot": 180.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "R Trench 2 Dips + Outpost"
+   ]
+  },
+  {
+   "name": "Outpost to Mid",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 180.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "Back up Simple Right + Outpost",
+    "Simple Right + Outpost"
+   ]
+  },
+  {
+   "name": "Outpost to R Trench + Shoot",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 180.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "Outpost"
+   ]
+  },
+  {
+   "name": "Plow",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 4,
+   "startRot": 0.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Shoot 8 + Plow"
+   ]
+  },
+  {
+   "name": "R Bump into Outpost",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Bumpy Ride L-R"
+   ]
+  },
+  {
+   "name": "R Bump Plow P.1",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 4,
+   "startRot": 90.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "Bumpy Ride R-L"
+   ]
+  },
+  {
+   "name": "R Bump Plow P.2",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 90.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Bumpy Ride R-L"
+   ]
+  },
+  {
+   "name": "R Bump to Outpost sideways",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "New New Auto",
+    "Outpost from Bump"
+   ]
+  },
+  {
+   "name": "R Bump to Outpost",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 160.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "R Trench 2 Dips + Outpost",
+    "R Trench Outpost"
+   ]
+  },
+  {
+   "name": "R Bump to R Trench",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 160.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "R Trench 2 Dips",
+    "Shoot 8 R Trench 2 Dips"
+   ]
+  },
+  {
+   "name": "R Trench + Plow",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 3,
+   "startRot": 90.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "Plow R Trench"
+   ]
+  },
+  {
+   "name": "R Trench + Shoot",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 0.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "R Trench to Bump"
+   ]
+  },
+  {
+   "name": "R Trench Back to Mid",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 3,
+   "startRot": 90.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "S R Back to Middle NC"
+   ]
+  },
+  {
+   "name": "R Trench Dip",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 0.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "R Trench 2 Dips",
+    "Shoot 8 R Trench 2 Dips"
+   ]
+  },
+  {
+   "name": "R Trench from L Plow",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Plow L Trench",
+    "Plow L Trench into Outpost"
+   ]
+  },
+  {
+   "name": "R Trench Quarter Reverse",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": 90.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Quarter R Trench"
+   ]
+  },
+  {
+   "name": "R Trench Quarter",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 0.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "Quarter R Trench"
+   ]
+  },
+  {
+   "name": "R Trench Reverse (over bump)",
+   "cls": "yellow",
+   "rotationTargets": 1,
+   "waypoints": 2,
+   "startRot": 90.0,
+   "endRot": 160.0,
+   "usedBy": [
+    "R Trench to Bump"
+   ]
+  },
+  {
+   "name": "R Trench Reverse",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 2,
+   "startRot": 90.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "Outpost",
+    "S R Back to Middle NC",
+    "Shoot 8 R Dip"
+   ]
+  },
+  {
+   "name": "R Trench Shoot",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Outpost",
+    "Plow L Trench"
+   ]
+  },
+  {
+   "name": "R Trench",
+   "cls": "yellow",
+   "rotationTargets": 2,
+   "waypoints": 3,
+   "startRot": 0.0,
+   "endRot": 90.0,
+   "usedBy": [
+    "Back up Simple Right + Outpost",
+    "Outpost",
+    "Outpost from Bump",
+    "R Trench 2 Dips",
+    "R Trench 2 Dips + Outpost",
+    "R Trench Outpost",
+    "S R Back to Middle NC",
+    "SMR 1",
+    "Shoot 8 R Dip",
+    "Simple Right + Outpost",
+    "Simple Right + Sweep"
+   ]
+  },
+  {
+   "name": "Shoot 8 + Climb",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": -90.0,
+   "usedBy": []
+  },
+  {
+   "name": "Shoot 8 Center",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 180.0,
+   "endRot": 180.0,
+   "usedBy": [
+    "Center to Depot"
+   ]
+  },
+  {
+   "name": "Shoot 8 R trench Backwards",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "Shoot 8 R Dip"
+   ]
+  },
+  {
+   "name": "Shoot 8 R trench Forward",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "Shoot 8 R Dip",
+    "Shoot 8 R Trench 2 Dips"
+   ]
+  },
+  {
+   "name": "Shoot 8",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Sideways outpost to R Trench",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "New New Auto",
+    "Outpost from Bump"
+   ]
+  },
+  {
+   "name": "SMR Test",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "SMR 5"
+   ]
+  },
+  {
+   "name": "Straightaway",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "SysCheck",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 5,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "SysCheck"
+   ]
+  },
+  {
+   "name": "Test Event Trig",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "Awesome"
+   ]
+  },
+  {
+   "name": "Test Event Triggers",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": [
+    "EventTest"
+   ]
+  },
+  {
+   "name": "Testing",
+   "cls": "green",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": [
+    "Not Awesome"
+   ]
+  },
+  {
+   "name": "Whippin Awesome",
+   "cls": "grey",
+   "rotationTargets": 4,
+   "waypoints": 6,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  },
+  {
+   "name": "Whippin Smooth",
+   "cls": "grey",
+   "rotationTargets": 6,
+   "waypoints": 6,
+   "startRot": -90.0,
+   "endRot": -90.0,
+   "usedBy": []
+  },
+  {
+   "name": "Yes",
+   "cls": "grey",
+   "rotationTargets": 0,
+   "waypoints": 2,
+   "startRot": 0.0,
+   "endRot": 0.0,
+   "usedBy": []
+  }
+ ],
+ "autos": [
+  {
+   "name": "2 Dips",
+   "folder": "Dips",
+   "pathNames": [
+    "L Trench Dip 1",
+    "L Trench RDip 1",
+    "L Trench Dip 2",
+    "L Trench RDip 2",
+    "L Bump to Depot to Climb"
+   ],
+   "defects": []
+  },
+  {
+   "name": "45 Defensive",
+   "folder": "Defensive Autos",
+   "pathNames": [
+    "L Trench 45",
+    "45 to L Bump",
+    "L Bump 45 to Depot",
+    "45 Dip from L Bump",
+    "45 to Mid"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Awesome",
+   "folder": "Testing",
+   "pathNames": [
+    "Test Event Trig"
+   ],
+   "defects": [
+    "junk"
+   ]
+  },
+  {
+   "name": "Back up Simple Right + Outpost",
+   "folder": "Simple",
+   "pathNames": [
+    "R Trench",
+    "Front end R Trench Reverse",
+    "Outpost + Shoot",
+    "Outpost to Mid"
+   ],
+   "defects": [
+    "duplicate"
+   ]
+  },
+  {
+   "name": "Bumpy Ride L-R",
+   "folder": "Bumpy",
+   "pathNames": [
+    "L Bump Plow P.1",
+    "L Bump Plow P.2",
+    "R Bump into Outpost"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Bumpy Ride R-L",
+   "folder": "Bumpy",
+   "pathNames": [
+    "R Bump Plow P.1",
+    "R Bump Plow P.2",
+    "L Bump to Depot to Climb"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Center to Depot",
+   "folder": "Dips",
+   "pathNames": [
+    "Shoot 8 Center",
+    "Center to Depot",
+    "Depot Backwards + Ocilation"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Dippy Doo",
+   "folder": "Dips",
+   "pathNames": [
+    "L Trench Dip 1",
+    "L Trench RDip 1",
+    "L Trench Dip 2",
+    "L Trench RDip 2",
+    "L Trench Dip 3 and Push",
+    "Dip 3 to Depot to Mid"
+   ],
+   "defects": []
+  },
+  {
+   "name": "EventTest",
+   "folder": "Testing",
+   "pathNames": [
+    "Test Event Triggers"
+   ],
+   "defects": [
+    "junk"
+   ]
+  },
+  {
+   "name": "Fast Away",
+   "folder": "Hot Autos",
+   "pathNames": [
+    "Fast Away"
+   ],
+   "defects": []
+  },
+  {
+   "name": "L Bump Dip",
+   "folder": "Dips",
+   "pathNames": [
+    "L Bump Dip"
+   ],
+   "defects": []
+  },
+  {
+   "name": "L R Back to Middle NC",
+   "folder": "No Climb",
+   "pathNames": [
+    "L Trench",
+    "L Trench Reverse",
+    "L Trench + Depot + Pickup",
+    "L Trench Back to Mid"
+   ],
+   "defects": []
+  },
+  {
+   "name": "L Trench 2 Dip + Depot",
+   "folder": "Dips",
+   "pathNames": [
+    "L Trench Face Forwards",
+    "L Trench over Bump",
+    "L Bump 45 to Depot",
+    "Copy of 45 Dip from L Bump",
+    "45 to Mid"
+   ],
+   "defects": []
+  },
+  {
+   "name": "L Trench 2 Dip",
+   "folder": "Dips",
+   "pathNames": [
+    "L Trench Face Forwards",
+    "L Trench over Bump",
+    "Copy of 45 Dip from L Bump"
+   ],
+   "defects": []
+  },
+  {
+   "name": "L Trench Defensive",
+   "folder": "Defensive Autos",
+   "pathNames": [
+    "L Trench 45",
+    "Copy of 45 to L Bump"
+   ],
+   "defects": []
+  },
+  {
+   "name": "New Auto",
+   "folder": "Simple",
+   "pathNames": [
+    "L Trench",
+    "L Trench Reverse",
+    "L Trench + Depot + Pickup"
+   ],
+   "defects": [
+    "duplicate",
+    "junk"
+   ]
+  },
+  {
+   "name": "New New Auto",
+   "folder": "Simple",
+   "pathNames": [
+    "R Bump to Outpost sideways",
+    "Sideways outpost to R Trench"
+   ],
+   "defects": [
+    "junk"
+   ]
+  },
+  {
+   "name": "Not Awesome",
+   "folder": "Testing",
+   "pathNames": [
+    "Testing"
+   ],
+   "defects": [
+    "junk"
+   ]
+  },
+  {
+   "name": "Outpost from Bump",
+   "folder": "Simple",
+   "pathNames": [
+    "R Bump to Outpost sideways",
+    "Sideways outpost to R Trench",
+    "R Trench"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Outpost",
+   "folder": "Simple",
+   "pathNames": [
+    "Outpost + Shoot",
+    "Outpost to R Trench + Shoot",
+    "R Trench",
+    "R Trench Reverse",
+    "R Trench Shoot"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Plow L Trench into Outpost",
+   "folder": "Plow",
+   "pathNames": [
+    "L Trench + Plow",
+    "R Trench from L Plow",
+    "Outpost + Shoot",
+    "Outpost to hub"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Plow L Trench",
+   "folder": "Plow",
+   "pathNames": [
+    "L Trench + Plow",
+    "R Trench from L Plow",
+    "R Trench Shoot"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Plow R Trench",
+   "folder": "Plow",
+   "pathNames": [
+    "R Trench + Plow",
+    "L Trench from R Plow",
+    "L Trench to Depot to Mid"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Quarter R Trench",
+   "folder": "Simple",
+   "pathNames": [
+    "R Trench Quarter",
+    "R Trench Quarter Reverse",
+    "Outpost + Shoot"
+   ],
+   "defects": []
+  },
+  {
+   "name": "R Trench 2 Dips + Outpost",
+   "folder": "Dips",
+   "pathNames": [
+    "R Trench",
+    "Copy of R Trench Reverse (over bump)",
+    "R Bump to Outpost",
+    "Outpost to Mid Dip",
+    "Copy of R Trench Reverse (over bump)"
+   ],
+   "defects": []
+  },
+  {
+   "name": "R Trench 2 Dips",
+   "folder": "Dips",
+   "pathNames": [
+    "R Trench",
+    "Copy of R Trench Reverse (over bump)",
+    "R Bump to R Trench",
+    "R Trench Dip",
+    "Copy of R Trench Reverse (over bump)"
+   ],
+   "defects": []
+  },
+  {
+   "name": "R Trench Outpost",
+   "folder": "Simple",
+   "pathNames": [
+    "R Trench",
+    "Copy of R Trench Reverse (over bump)",
+    "R Bump to Outpost"
+   ],
+   "defects": []
+  },
+  {
+   "name": "R Trench to Bump",
+   "folder": "Simple",
+   "pathNames": [
+    "R Trench + Shoot",
+    "R Trench Reverse (over bump)"
+   ],
+   "defects": []
+  },
+  {
+   "name": "S R Back to Middle NC",
+   "folder": "No Climb",
+   "pathNames": [
+    "R Trench",
+    "R Trench Reverse",
+    null,
+    "R Trench Back to Mid"
+   ],
+   "defects": [
+    "null-path"
+   ]
+  },
+  {
+   "name": "Shoot 8 + Plow",
+   "folder": "Dips",
+   "pathNames": [
+    "Backup shoot 8",
+    "Plow"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Shoot 8 R Dip",
+   "folder": "Dips",
+   "pathNames": [
+    "Shoot 8 R trench Backwards",
+    "Shoot 8 R trench Forward",
+    "R Trench",
+    "R Trench Reverse",
+    "Copy of R Trench Dip",
+    "R Trench Reverse"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Shoot 8 R Trench 2 Dips",
+   "folder": "Dips",
+   "pathNames": [
+    "Shoot 8 R trench Forward",
+    null,
+    "Copy of R Trench Reverse (over bump)",
+    "R Bump to R Trench",
+    "R Trench Dip",
+    "Copy of R Trench Reverse (over bump)"
+   ],
+   "defects": [
+    "null-path"
+   ]
+  },
+  {
+   "name": "Simple L NC",
+   "folder": "No Climb",
+   "pathNames": [
+    "L Trench",
+    "L Trench Reverse",
+    "L Trench + Depot + Pickup"
+   ],
+   "defects": [
+    "duplicate"
+   ]
+  },
+  {
+   "name": "Simple left + Depot",
+   "folder": "Simple",
+   "pathNames": [
+    "L Trench",
+    "L Trench Reverse",
+    "L Trench to Depot to Mid"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Simple Left",
+   "folder": "Simple",
+   "pathNames": [
+    "L Trench",
+    "L Trench Reverse"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Simple Right + Outpost",
+   "folder": "Simple",
+   "pathNames": [
+    "R Trench",
+    "Front end R Trench Reverse",
+    "Outpost + Shoot",
+    "Outpost to Mid"
+   ],
+   "defects": [
+    "duplicate"
+   ]
+  },
+  {
+   "name": "Simple Right + Sweep",
+   "folder": "Simple",
+   "pathNames": [
+    "R Trench",
+    "Front end R Trench Reverse",
+    "Outpost + Shoot",
+    "Outpost Sweep"
+   ],
+   "defects": []
+  },
+  {
+   "name": "Slow Lob",
+   "folder": "Simple",
+   "pathNames": [
+    "L Trench Slow Lob",
+    "L Trench over Bump"
+   ],
+   "defects": []
+  },
+  {
+   "name": "SMR 1",
+   "folder": "Simple",
+   "pathNames": [
+    "R Trench",
+    "Front end R Trench Reverse",
+    "Outpost + Shoot"
+   ],
+   "defects": []
+  },
+  {
+   "name": "SMR 5",
+   "folder": "Hot Autos",
+   "pathNames": [
+    "SMR Test"
+   ],
+   "defects": []
+  },
+  {
+   "name": "SysCheck",
+   "folder": "Testing",
+   "pathNames": [
+    "SysCheck"
+   ],
+   "defects": [
+    "junk"
+   ]
+  }
+ ],
+ "duplicates": [
+  [
+   "Back up Simple Right + Outpost",
+   "Simple Right + Outpost"
+  ],
+  [
+   "New Auto",
+   "Simple L NC"
+  ]
+ ],
+ "missingPaths": []
+}
