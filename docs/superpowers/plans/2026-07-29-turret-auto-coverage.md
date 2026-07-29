@@ -52,9 +52,14 @@ Reads the robot repo's `.path` and `.auto` files, classifies every path green/ye
                  "pathNames": ["R Trench", "R Trench Reverse", null, "R Trench Back to Mid"],
                  "defects": ["null-path"]}],
       "duplicates": [["Back up Simple Right + Outpost", "Simple Right + Outpost"],
-                     ["New Auto", "Simple L NC"]]
+                     ["New Auto", "Simple L NC"]],
+      "missingPaths": []
     }
     ```
+  - `missingPaths` lists names an auto references that have no `.path` file on disk. Currently
+    empty; it exists so a future edit to the robot repo surfaces as data rather than a silent
+    miscount. Consumers read the fields they need and ignore the rest — no task validates the
+    key set.
   - `defects` values are exactly: `"null-path"`, `"duplicate"`, `"junk"`. Over-20 s is **not** a defect here — it comes from `autos.json` durations in the page, because this generator never computes timing.
   - `JUNK_NAMES` is a module-level `frozenset` of the six known scratch autos.
 
