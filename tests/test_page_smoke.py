@@ -75,3 +75,22 @@ def test_no_fatal_load_error(dom):
     assert m, "fatal div missing from the page"
     assert "hidden" in m.group(1), f"fatal banner is showing: {m.group(2)[:200]}"
     assert m.group(2).strip() == ""
+
+
+def test_tree_roots_at_opening_paths(dom):
+    assert "R Trench" in dom and "L Trench" in dom
+
+
+def test_tree_shows_root_auto_counts(dom):
+    text = re.sub(r"<[^>]+>", " ", dom)
+    text = re.sub(r"\s+", " ", text)
+    assert "R Trench 8 autos" in text or "R Trench (8" in text
+
+
+def test_tree_flags_broken_autos(dom):
+    assert "S R Back to Middle NC" in dom
+    assert "✖" in dom
+
+
+def test_tree_flags_overruns(dom):
+    assert "45 Defensive" in dom and "⚠" in dom

@@ -57,6 +57,25 @@
     #tab-map { flex-direction: column; }
     #map-side { width: auto; border-right: 0; border-bottom: 1px solid var(--outline); max-height: 42%; }
   }
+
+  /* ---- tree tab ---- */
+  #tab-tree { flex-direction: column; overflow-y: auto; padding: 12px 16px; }
+  .root { margin-bottom: 18px; }
+  .root > h3 {
+    margin: 0 0 6px; font-size: 14px; font-weight: 600;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .root > h3 .meta { font-size: 12px; color: var(--on-surface-dim); font-weight: 400; }
+  .leaf {
+    display: flex; align-items: baseline; gap: 8px; padding: 3px 8px;
+    border-left: 2px solid var(--outline); margin-left: 10px; cursor: pointer;
+    font-size: 13px;
+  }
+  .leaf:hover { background: var(--surface-2); }
+  .leaf .chain { color: var(--on-surface-dim); font-size: 12px; }
+  .leaf .t { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--on-surface-dim); }
+  .leaf .t.over { color: var(--warn-fg); font-weight: 700; }
+  .flags { letter-spacing: 2px; }
 </style>
 
 <header>
@@ -216,6 +235,67 @@ function fatal(msg) {
   f.textContent = msg;
 }
 
+const LANE_LABEL = { left: 'left wall', centre: 'centre', right: 'right wall' };
+
+function autoFlags(name) {
+  const rec = PATHS.autos.find(x => x.name === name);
+  const a = AUTO_BY_NAME.get(name);
+  let f = '';
+  if (rec && rec.defects.includes('null-path')) f += '✖';
+  if (rec && rec.defects.includes('duplicate')) f += '⧉';
+  if (rec && rec.defects.includes('junk')) f += '🧪';
+  if (a && a.drivingTimeSec > AUTO_PERIOD) f += '⚠';
+  return f;
+}
+
+function buildTree() {
+  const roots = new Map();
+  for (const rec of PATHS.autos) {
+    const first = rec.pathNames.find(p => p !== null) || '(none)';
+    if (!roots.has(first)) roots.set(first, []);
+    roots.get(first).push(rec);
+  }
+  const ordered = [...roots.entries()].sort((a, b) =>
+    b[1].length - a[1].length || a[0].localeCompare(b[0]));
+
+  const html = ordered.map(([root, recs]) => {
+    const sample = AUTO_BY_NAME.get(recs[0].name);
+    const y = sample && sample.samples.length ? sample.samples[0].y : null;
+    const where = y === null ? '' : `starts ${LANE_LABEL[lane(y)]} (y≈${y.toFixed(1)})`;
+    const pr = PATH_BY_NAME.get(root);
+    const cls = pr ? pr.cls : 'grey';
+    const leaves = recs
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(rec => {
+        const a = AUTO_BY_NAME.get(rec.name);
+        const t = a ? a.drivingTimeSec : null;
+        const over = t !== null && t > AUTO_PERIOD;
+        const chain = rec.pathNames.slice(1)
+          .map(p => p === null ? '⟨null⟩' : p).join(' → ') || '—';
+        const broken = rec.defects.includes('null-path');
+        const time = t === null ? '?' :
+          broken ? `${t.toFixed(1)}s (unreliable)` : `${t.toFixed(1)}s`;
+        return `<div class="leaf" data-name="${rec.name}">
+          <span class="flags">${autoFlags(rec.name)}</span>
+          <b>${rec.name}</b>
+          <span class="chain">→ ${chain}</span>
+          <span class="t${over ? ' over' : ''}">${time}</span>
+        </div>`;
+      }).join('');
+    return `<div class="root">
+      <h3><span class="cls-${cls}">${root}</span>
+        <span class="meta">${recs.length} auto${recs.length === 1 ? '' : 's'}${where ? ' · ' + where : ''}</span></h3>
+      ${leaves}</div>`;
+  }).join('');
+
+  const el = document.getElementById('tab-tree');
+  el.innerHTML = `<p class="src">✖ broken (null path) · ⧉ duplicate · 🧪 test · ⚠ over ${AUTO_PERIOD}s. Click any auto to see it on the Map.</p>` + html;
+  el.addEventListener('click', e => {
+    const d = e.target.closest('.leaf');
+    if (d) isolate(d.dataset.name);
+  });
+}
+
 Promise.all([
   fetch('autos.json').then(r => r.json()),
   fetch('paths.json').then(r => r.json()),
@@ -228,6 +308,7 @@ Promise.all([
     `${src.repo}@${src.branch} ${src.sha} (${src.commitDate})`;
   buildLegend();
   buildRouteList();
+  buildTree();
   field.onload = drawMap;
   field.src = 'field26.png';
   if (field.complete) drawMap();
